@@ -10,6 +10,7 @@ use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -17,6 +18,18 @@ class AuthController extends Controller
     private function generateCode(): string
     {
         return (string) random_int(100000, 999999);
+    }
+
+    private function sendVerificationCode(User $user, string $code, string $purpose = 'email verification'): void
+    {
+        $subject = $purpose === 'two-factor authentication'
+            ? 'TalentHR two-factor login code'
+            : 'TalentHR company email verification code';
+
+        Mail::raw(
+            "Your TalentHR {$purpose} code is: {$code}\n\nThis 6-digit code will expire soon. If you did not request this code, please ignore this email.",
+            fn ($message) => $message->to($user->email)->subject($subject)
+        );
     }
 
     public function register(Request $request)
@@ -56,6 +69,8 @@ class AuthController extends Controller
                 'user' => $user,
             ];
         });
+
+        $this->sendVerificationCode($data['user'], $verificationCode);
 
         ActivityLogger::log(
             'register',
@@ -106,6 +121,8 @@ class AuthController extends Controller
                 'email_verification_expires_at' => now()->addMinutes(15),
             ]);
 
+            $this->sendVerificationCode($user, $verificationCode);
+
             return response()->json([
                 'message' => 'Email verification is required before login.',
                 'email_verification_required' => true,
@@ -120,6 +137,8 @@ class AuthController extends Controller
                 'two_factor_code' => $twoFactorCode,
                 'two_factor_expires_at' => now()->addMinutes(10),
             ]);
+
+            $this->sendVerificationCode($user, $twoFactorCode, 'two-factor authentication');
 
             ActivityLogger::log(
                 'two_factor_challenge',
@@ -243,6 +262,8 @@ class AuthController extends Controller
             'email_verification_code' => $verificationCode,
             'email_verification_expires_at' => now()->addMinutes(15),
         ]);
+
+        $this->sendVerificationCode($user, $verificationCode);
 
         ActivityLogger::log(
             'resend_verification_code',
