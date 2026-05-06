@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\VerificationDocument;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
@@ -15,12 +16,32 @@ class DocumentController extends Controller
         $company = $request->user()->company;
 
         $request->validate([
+            'type' => ['nullable', 'in:secp,ntn,address'],
+            'file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
             'secp' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
             'ntn' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
             'address' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        if (! $request->hasFile('secp') && ! $request->hasFile('ntn') && ! $request->hasFile('address')) {
+        $files = [];
+
+        if ($request->hasFile('file')) {
+            if (! $request->filled('type')) {
+                return response()->json([
+                    'message' => 'Document type is required.',
+                ], 422);
+            }
+
+            $files[$request->input('type')] = $request->file('file');
+        }
+
+        foreach (['secp', 'ntn', 'address'] as $type) {
+            if ($request->hasFile($type)) {
+                $files[$type] = $request->file($type);
+            }
+        }
+
+        if ($files === []) {
             return response()->json([
                 'message' => 'At least one document is required.',
             ], 422);
@@ -28,12 +49,8 @@ class DocumentController extends Controller
 
         $uploaded = [];
 
-        foreach (['secp', 'ntn', 'address'] as $type) {
-            if (! $request->hasFile($type)) {
-                continue;
-            }
-
-            $path = $request->file($type)->store("verification-documents/company-{$company->id}");
+        foreach ($files as $type => $file) {
+            $path = $file->store("verification-documents/company-{$company->id}");
 
             $uploaded[] = VerificationDocument::updateOrCreate(
                 [
@@ -72,5 +89,30 @@ class DocumentController extends Controller
             'documents' => $uploaded,
         ]);
     }
-}
 
+    public function file(Request $request, VerificationDocument $document)
+    {
+        $company = $request->user()->company;
+
+        if (! $company || $document->company_id !== $company->id) {
+            return response()->json([
+                'message' => 'You are not allowed to view this document.',
+            ], 403);
+        }
+
+        if (! $document->file_path || ! Storage::disk('local')->exists($document->file_path)) {
+            return response()->json([
+                'message' => 'File not found.',
+            ], 404);
+        }
+
+        ActivityLogger::log(
+            'view_file',
+            'secure_file_access',
+            "Viewed own company verification document {$document->id}.",
+            $request
+        );
+
+        return Storage::disk('local')->response($document->file_path);
+    }
+}

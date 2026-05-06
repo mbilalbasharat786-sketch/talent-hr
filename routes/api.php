@@ -112,6 +112,7 @@ Route::prefix('company')->group(function () {
         Route::get('/profile', [CompanyProfileController::class, 'show']);
         Route::put('/profile', [CompanyProfileController::class, 'update']);
         Route::post('/documents', [CompanyDocumentController::class, 'store']);
+        Route::get('/documents/{document}/file', [CompanyDocumentController::class, 'file']);
         Route::post('/supervisor', [CompanySupervisorController::class, 'store']);
         Route::get('/hr', [CompanyHrUserController::class, 'index']);
         Route::post('/hr', [CompanyHrUserController::class, 'store']);

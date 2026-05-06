@@ -19,6 +19,10 @@ class VerificationDocument extends Model
 
     public function getSecureUrlAttribute()
     {
+        if (request()->user()?->role === 'company') {
+            return url("/api/company/documents/{$this->id}/file");
+        }
+
         return url("/api/admin/files/company-document/{$this->id}");
     }
 
@@ -27,5 +31,4 @@ class VerificationDocument extends Model
         return $this->belongsTo(Company::class);
     }
 }
-
 

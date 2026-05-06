@@ -7,18 +7,17 @@
         <form id="docForm" enctype="multipart/form-data">
             <div class="mb-3"><label class="form-label">Type</label>
                 <select class="form-select" name="type" required>
-                    <option value="">— Select —</option>
-                    <option value="registration_certificate">Registration Certificate</option>
-                    <option value="tax_certificate">Tax Certificate</option>
-                    <option value="utility_bill">Utility Bill</option>
-                    <option value="other">Other</option>
+                    <option value="">-- Select --</option>
+                    <option value="secp">SECP Registration Certificate</option>
+                    <option value="ntn">NTN / Tax Certificate</option>
+                    <option value="address">Address Proof / Utility Bill</option>
                 </select></div>
-            <div class="mb-3"><label class="form-label">File (PDF/PNG/JPG)</label><input type="file" name="file" class="form-control" required accept=".pdf,.png,.jpg,.jpeg"></div>
+            <div class="mb-3"><label class="form-label">File (PDF/PNG/JPG/WEBP)</label><input type="file" name="file" class="form-control" required accept=".pdf,.png,.jpg,.jpeg,.webp"></div>
             <button class="btn btn-primary">Upload</button>
         </form>
     </div></div></div>
     <div class="col-lg-7"><div class="card"><div class="card-header">Submitted documents</div><div class="card-body p-0">
-        <table class="table mb-0"><thead><tr><th>Type</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody id="docList"><tr><td colspan="4" class="empty-state">Loading…</td></tr></tbody></table>
+        <table class="table mb-0"><thead><tr><th>Type</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody id="docList"><tr><td colspan="4" class="empty-state">Loading...</td></tr></tbody></table>
     </div></div></div>
 </div>
 @push('scripts')
