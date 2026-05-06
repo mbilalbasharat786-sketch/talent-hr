@@ -57,13 +57,13 @@ class TestUserSeeder extends Seeder
             ]
         );
 
-        // ✅ Admin User (for /admin/login)
+        // ✅ Super Admin User (for /admin/login)
         \App\Models\User::updateOrCreate(
             ['email'=>'admin@test.com'],
             [
                 'name'=>'Test Admin',
                 'password'=>bcrypt('123456'),
-                'role'=>'admin',
+                'role'=>'super_admin',
                 'status'=>'active',
                 'email_verified_at'=>now()
             ]
