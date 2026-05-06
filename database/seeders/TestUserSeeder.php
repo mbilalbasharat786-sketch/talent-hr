@@ -21,6 +21,19 @@ public function run()
             'trust_level' => 'gold'
         ]
     );
+// ✅ owner user (no condition now)
+    \App\Models\User::updateOrCreate(
+        ['email'=>'owner@test.com'],
+        [
+            'name'=>'Test Owner',
+            'password'=>bcrypt('123456'),
+            'role'=>'hr',
+            'company_id'=>$c->id,
+            'owner_type'=>'owner_manager',
+            'status'=>'active',
+            'email_verified_at'=>now()
+        ]
+    );
 
     // ✅ HR user (no condition now)
     \App\Models\User::updateOrCreate(
