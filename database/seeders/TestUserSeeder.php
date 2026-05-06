@@ -19,23 +19,32 @@ class TestUserSeeder extends Seeder
     $c = \App\Models\Company::where('email','company@test.com')->first();
 
     if ($c) {
-
-        // Link HR
-        \App\Models\User::where('email','hr@test.com')
-            ->update(['company_id'=>$c->id, 'hr_type'=>'hr_manager']);
-
-        // Owner
-        \App\Models\User::updateOrCreate(
-            ['email'=>'owner@test.com'],
-            [
-                'name'=>'Test Owner',
-                'password'=>bcrypt('123456'),
-                'role'=>'company',
-                'company_id'=>$c->id,
-                'status'=>'active',
-                'email_verified_at'=>now()
-            ]
-        );
+// Admin User (FIXED)
+\App\Models\User::updateOrCreate(
+    ['email'=>'admin@test.com'],
+    [
+        'name'=>'Test Admin',
+        'password'=>bcrypt('123456'),
+        'role'=>'hr',
+        'company_id'=>$c->id,
+        'hr_type'=>'admin_manager',
+        'status'=>'active',
+        'email_verified_at'=>now()
+    ]
+);
+    // HR User (FIXED)
+\App\Models\User::updateOrCreate(
+    ['email'=>'hr@test.com'],
+    [
+        'name'=>'Test HR',
+        'password'=>bcrypt('123456'),
+        'role'=>'hr',
+        'company_id'=>$c->id,
+        'hr_type'=>'hr_manager',
+        'status'=>'active',
+        'email_verified_at'=>now()
+    ]
+);
     }
 
     // Candidate
