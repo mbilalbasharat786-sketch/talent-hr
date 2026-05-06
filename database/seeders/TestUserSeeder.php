@@ -27,7 +27,7 @@ public function run()
         [
             'name'=>'Test Owner',
             'password'=>bcrypt('123456'),
-            'role'=>'hr',
+            'role'=>'owner',
             'company_id'=>$c->id,
             'owner_type'=>'owner_manager',
             'status'=>'active',
