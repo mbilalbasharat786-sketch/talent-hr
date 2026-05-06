@@ -25,7 +25,7 @@ class AssessmentController extends Controller
             'browser' => ['required', 'string', 'max:255'],
         ]);
 
-        $application = JobApplication::with('job.assessment')->findOrFail($request->application_id);
+        $application = JobApplication::with('job.assessment.questions')->findOrFail($request->application_id);
 
         if ($application->candidate_id !== $candidate->id) {
             return response()->json([
@@ -63,7 +63,7 @@ class AssessmentController extends Controller
 
             return response()->json([
                 'message' => 'Assessment session resumed successfully.',
-                'session' => $existingSession->load('assessment'),
+                'session' => $existingSession->load('assessment.questions'),
                 'submission' => AssessmentSubmission::where('assessment_id', $assessment->id)
                     ->where('candidate_id', $candidate->id)
                     ->first(),
@@ -89,7 +89,7 @@ class AssessmentController extends Controller
 
         return response()->json([
             'message' => 'Assessment started successfully.',
-            'session' => $session,
+            'session' => $session->load('assessment.questions'),
             'submission' => $submission,
         ], 201);
     }

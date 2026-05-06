@@ -12,7 +12,7 @@
         const data = await THR.api('/hr/assessments');
         const items = data.data || data;
         const sel = document.querySelector('[name=assessment_id]');
-        sel.innerHTML = '<option value="">— None —</option>' + items.map(a => `<option value="${a.id}">${THR.escapeHtml(a.title)}</option>`).join('');
+        sel.innerHTML = '<option value="">Select assessment</option>' + items.map(a => `<option value="${a.id}">${THR.escapeHtml(a.title)}</option>`).join('');
     } catch (e) { /* ignore */ }
 })();
 document.getElementById('jobForm').addEventListener('submit', async (e) => {
@@ -20,6 +20,7 @@ document.getElementById('jobForm').addEventListener('submit', async (e) => {
     const data = THR.formData(e.target);
     if (data.skills) data.skills = data.skills.split(',').map(s => s.trim()).filter(Boolean);
     if (data.candidates_required) data.candidates_required = parseInt(data.candidates_required, 10);
+    if (data.assessment_id) data.assessment_id = parseInt(data.assessment_id, 10);
     try { const r = await THR.api('/hr/jobs', { method: 'POST', body: data }); THR.toast('Job posted','success'); setTimeout(()=>location.href='/hr/jobs/'+(r.job?.id||r.id||''),500); }
     catch (err) { THR.toast(err.message, 'danger'); }
 });

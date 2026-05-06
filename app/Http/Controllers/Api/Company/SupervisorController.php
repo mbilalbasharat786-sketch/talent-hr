@@ -25,7 +25,7 @@ class SupervisorController extends Controller
                 ),
             ],
             'cnic' => ['required', 'string', 'max:30'],
-            'selfie' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'selfie' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         $data = [

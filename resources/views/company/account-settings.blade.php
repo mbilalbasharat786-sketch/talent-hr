@@ -25,7 +25,7 @@
 async function load() {
     try {
         const r = await THR.api('/company/account-settings');
-        document.getElementById('twoFactorSwitch').checked = !!r.two_factor_enabled;
+        document.getElementById('twoFactorSwitch').checked = !!(r.account_settings && r.account_settings.two_factor_enabled);
     } catch (e) { THR.toast(e.message, 'danger'); }
 }
 load();

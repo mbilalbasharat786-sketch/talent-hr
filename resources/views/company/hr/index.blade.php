@@ -5,10 +5,11 @@
 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newHrModal"><i class="bi bi-plus-circle"></i> New HR</button></div>
 <div class="card"><div class="card-body p-0"><table class="table mb-0">
 <thead><tr><th>Name</th><th>Email</th><th>HR Type</th><th>Status</th><th></th></tr></thead>
-<tbody id="rows"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody></table></div></div>
+<tbody id="rows"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody></table></div></div>
 
 <div class="modal fade" id="newHrModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <form id="newHrForm">
+        <input type="hidden" name="role" value="hr">
         <div class="modal-header"><h5 class="modal-title">New HR User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" required></div>
@@ -16,9 +17,8 @@
             <div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" required minlength="6"></div>
             <div class="mb-3"><label class="form-label">HR Type</label>
                 <select class="form-select" name="hr_type">
+                    <option value="hr_manager">HR Manager</option>
                     <option value="recruiter">Recruiter</option>
-                    <option value="manager">Manager</option>
-                    <option value="generalist">Generalist</option>
                 </select></div>
         </div>
         <div class="modal-footer"><button class="btn btn-primary">Create</button></div>
@@ -31,7 +31,7 @@
         <div class="modal-header"><h5 class="modal-title">Edit HR</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" required></div>
-            <div class="mb-3"><label class="form-label">HR Type</label><select class="form-select" name="hr_type"><option value="recruiter">Recruiter</option><option value="manager">Manager</option><option value="generalist">Generalist</option></select></div>
+            <div class="mb-3"><label class="form-label">HR Type</label><select class="form-select" name="hr_type"><option value="hr_manager">HR Manager</option><option value="recruiter">Recruiter</option></select></div>
         </div>
         <div class="modal-footer"><button class="btn btn-primary">Save</button></div>
     </form>
@@ -49,7 +49,7 @@ async function load() {
         tb.innerHTML = items.map(h => `<tr>
             <td>${THR.escapeHtml(h.name)}</td>
             <td>${THR.escapeHtml(h.email)}</td>
-            <td>${THR.escapeHtml(h.hr_type||'—')}</td>
+            <td>${THR.escapeHtml(h.hr_type || '--')}</td>
             <td>${THR.statusPill(h.status)}</td>
             <td>
                 <button class="btn btn-sm btn-outline-primary edit-btn" data-row='${THR.escapeHtml(JSON.stringify(h))}'>Edit</button>

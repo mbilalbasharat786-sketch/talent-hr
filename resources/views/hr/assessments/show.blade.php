@@ -9,7 +9,7 @@
         <form id="settingsForm">
             <div class="mb-3"><label class="form-label">Title</label><input class="form-control" name="title" required></div>
             <div class="mb-3"><label class="form-label">Time limit (min)</label><input type="number" min="1" class="form-control" name="time_limit" required></div>
-            <div class="mb-3"><label class="form-label">Cooldown (days)</label><input type="number" min="0" class="form-control" name="cooldown_days"></div>
+            <div class="mb-3"><label class="form-label">Cooldown (days)</label><input type="number" min="1" class="form-control" name="cooldown_days"></div>
             <div class="form-check"><input type="checkbox" class="form-check-input" name="one_attempt_only" id="ona2"><label class="form-check-label" for="ona2">One attempt only</label></div>
             <div class="form-check"><input type="checkbox" class="form-check-input" name="auto_submit" id="as2"><label class="form-check-label" for="as2">Auto-submit</label></div>
             <div class="form-check"><input type="checkbox" class="form-check-input" name="randomize_questions" id="rq2"><label class="form-check-label" for="rq2">Randomize</label></div>
@@ -22,7 +22,7 @@
 <div class="modal fade" id="qModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="qForm">
     <div class="modal-header"><h5 class="modal-title">Add Question</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
-        <div class="mb-3"><label class="form-label">Type</label><select class="form-select" name="type" id="qType" required><option value="mcq">Multiple choice</option><option value="short_text">Short text</option><option value="long_text">Long text</option></select></div>
+        <div class="mb-3"><label class="form-label">Type</label><select class="form-select" name="type" id="qType" required><option value="mcq">Multiple choice</option><option value="coding">Coding</option><option value="case">Case study</option><option value="file">File upload task</option></select></div>
         <div class="mb-3"><label class="form-label">Question</label><textarea class="form-control" name="question_text" rows="3" required></textarea></div>
         <div class="mb-3" id="optionsBlock"><label class="form-label">Options (one per line)</label><textarea class="form-control" name="options" rows="4" placeholder="Option A&#10;Option B"></textarea></div>
         <div class="mb-3"><label class="form-label">Expected answer</label><input class="form-control" name="expected_answer"></div>
@@ -64,7 +64,7 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
     data.auto_submit = !!e.target.auto_submit.checked;
     data.randomize_questions = !!e.target.randomize_questions.checked;
     data.time_limit = parseInt(data.time_limit, 10);
-    data.cooldown_days = parseInt(data.cooldown_days || 0, 10);
+    data.cooldown_days = parseInt(data.cooldown_days || 7, 10);
     try { await THR.api(`/hr/assessments/${id}`, { method: 'PUT', body: data }); THR.toast('Saved','success'); load(); }
     catch (err) { THR.toast(err.message, 'danger'); }
 });

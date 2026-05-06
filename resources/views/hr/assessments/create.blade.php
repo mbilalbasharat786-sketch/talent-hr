@@ -7,7 +7,7 @@
     <div class="row g-3">
         <div class="col-md-8"><label class="form-label">Title</label><input class="form-control" name="title" required maxlength="255"></div>
         <div class="col-md-4"><label class="form-label">Time limit (minutes)</label><input type="number" min="1" name="time_limit" class="form-control" value="30" required></div>
-        <div class="col-md-3"><label class="form-label">Cooldown days</label><input type="number" min="0" name="cooldown_days" class="form-control" value="7"></div>
+        <div class="col-md-3"><label class="form-label">Cooldown days</label><input type="number" min="1" name="cooldown_days" class="form-control" value="7"></div>
         <div class="col-md-3 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="one_attempt_only" id="ona" checked><label class="form-check-label" for="ona">One attempt only</label></div></div>
         <div class="col-md-3 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="auto_submit" id="as" checked><label class="form-check-label" for="as">Auto-submit on time-up</label></div></div>
         <div class="col-md-3 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" name="randomize_questions" id="rq"><label class="form-check-label" for="rq">Randomize questions</label></div></div>
@@ -27,7 +27,7 @@ document.getElementById('assForm').addEventListener('submit', async (e) => {
     data.auto_submit = !!e.target.auto_submit.checked;
     data.randomize_questions = !!e.target.randomize_questions.checked;
     data.time_limit = parseInt(data.time_limit, 10);
-    data.cooldown_days = parseInt(data.cooldown_days || 0, 10);
+    data.cooldown_days = parseInt(data.cooldown_days || 7, 10);
     try { const r = await THR.api('/hr/assessments', { method: 'POST', body: data }); THR.toast('Created','success'); setTimeout(()=>location.href='/hr/assessments/'+(r.assessment?.id||r.id||''),500); }
     catch (err) { THR.toast(err.message, 'danger'); }
 });

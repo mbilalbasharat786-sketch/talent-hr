@@ -116,7 +116,6 @@ function renderInput(q) {
     if (q.type === 'mcq' && Array.isArray(q.options)) {
         return q.options.map((opt,i) => `<div class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${THR.escapeHtml(opt)}" id="q${q.id}_${i}"><label class="form-check-label" for="q${q.id}_${i}">${THR.escapeHtml(opt)}</label></div>`).join('');
     }
-    if (q.type === 'short_text') return `<input type="text" class="form-control bg-dark text-light border-secondary" name="q_${q.id}">`;
     return `<textarea rows="4" class="form-control bg-dark text-light border-secondary" name="q_${q.id}"></textarea>`;
 }
 
