@@ -205,6 +205,7 @@ function addWorkingHour() {
     newHour.innerHTML = `
         <div class="col-md-3">
             <select class="form-select" name="working_hours[${dayIndex}][day]">
+                <option value="">Select Day</option>
                 <option value="monday">Monday</option>
                 <option value="tuesday">Tuesday</option>
                 <option value="wednesday">Wednesday</option>
@@ -243,9 +244,15 @@ function setStandardHours() {
     weekdays.forEach(day => {
         addWorkingHour();
         const lastRow = container.querySelector(`[data-day-index="${dayIndex - 1}"]`);
-        lastRow.querySelector(`select[name="working_hours[${dayIndex - 1}][day]"]`).value = day;
-        lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][start]"]`).value = '09:00';
-        lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][end]"]`).value = '17:00';
+        if (lastRow) {
+            const daySelect = lastRow.querySelector(`select[name="working_hours[${dayIndex - 1}][day]"]`);
+            const startInput = lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][start]"]`);
+            const endInput = lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][end]"]`);
+            
+            if (daySelect) daySelect.value = day;
+            if (startInput) startInput.value = '09:00';
+            if (endInput) endInput.value = '17:00';
+        }
     });
     updateRemoveButtons();
 }
