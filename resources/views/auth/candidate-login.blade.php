@@ -15,10 +15,22 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = window.THR.formData(e.target);
     try {
+        console.log('Attempting login with:', data.email);
         const res = await window.THR.api('/candidate/login', { method: 'POST', body: data });
-        window.THR.Auth.set(res.token, 'candidate', res.user);
-        location.href = '/candidate/dashboard';
-    } catch (err) { window.THR.toast(err.message || 'Login failed', 'danger'); }
+        console.log('Login response:', res);
+        
+        if (res.token && res.user) {
+            window.THR.Auth.set(res.token, 'candidate', res.user);
+            window.THR.toast('Login successful!', 'success');
+            location.href = '/candidate/dashboard';
+        } else {
+            throw new Error('Invalid response from server');
+        }
+    } catch (err) { 
+        console.error('Login error:', err);
+        const errorMessage = err.message || 'Login failed';
+        window.THR.toast(errorMessage, 'danger'); 
+    }
 });
 </script>
 @endpush

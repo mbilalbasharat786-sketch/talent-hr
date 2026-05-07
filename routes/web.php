@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', fn () => view('welcome'));
+Route::get('/jobs', fn () => view('public.jobs'));
 
 // Named "login" route exists only to satisfy Laravel's auth redirect
 // (when an API call hits 401 without a token, Laravel calls route('login')).
@@ -32,6 +33,7 @@ Route::view('/company/verify-email', 'auth.company-verify-email');
 Route::view('/company/2fa', 'auth.company-2fa');
 Route::view('/hr/login', 'auth.hr-login');
 Route::view('/candidate/login', 'auth.candidate-login');
+Route::view('/candidate/register', 'auth.candidate-register');
 
 // ---------- ADMIN ----------
 Route::prefix('admin')->group(function () {

@@ -40,6 +40,8 @@
 @push('scripts')
 <script>
 let editModal;
+let newModal;
+
 async function load() {
     try {
         const data = await THR.api('/company/hr');
@@ -55,32 +57,79 @@ async function load() {
                 <button class="btn btn-sm btn-outline-primary edit-btn" data-row='${THR.escapeHtml(JSON.stringify(h))}'>Edit</button>
                 ${h.status === 'active' ? `<button class="btn btn-sm btn-outline-danger deact-btn" data-id="${h.id}">Deactivate</button>` : ''}
             </td></tr>`).join('');
-        document.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => {
-            const h = JSON.parse(b.dataset.row);
-            const f = document.getElementById('editHrForm');
-            f.id.value = h.id; f.name.value = h.name; f.hr_type.value = h.hr_type || 'recruiter';
-            editModal.show();
-        }));
-        document.querySelectorAll('.deact-btn').forEach(b => b.addEventListener('click', async () => {
-            if (!confirm('Deactivate this HR user?')) return;
-            try { await THR.api(`/company/hr/${b.dataset.id}/deactivate`, { method: 'POST' }); THR.toast('Deactivated','warning'); load(); } catch(e){THR.toast(e.message,'danger');}
-        }));
-    } catch (e) { THR.toast(e.message, 'danger'); }
+        
+        // Re-attach event listeners
+        attachEventListeners();
+    } catch (e) { 
+        console.error('Load error:', e);
+        THR.toast(e.message, 'danger'); 
+    }
 }
+
+function attachEventListeners() {
+    document.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => {
+        const h = JSON.parse(b.dataset.row);
+        const f = document.getElementById('editHrForm');
+        f.id.value = h.id; 
+        f.name.value = h.name; 
+        f.hr_type.value = h.hr_type || 'recruiter';
+        if (editModal) editModal.show();
+    }));
+    
+    document.querySelectorAll('.deact-btn').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Deactivate this HR user?')) return;
+        try { 
+            await THR.api(`/company/hr/${b.dataset.id}/deactivate`, { method: 'POST' }); 
+            THR.toast('Deactivated','warning'); 
+            load(); 
+        } catch(e){
+            console.error('Deactivate error:', e);
+            THR.toast(e.message,'danger');
+        }
+    }));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    editModal = new bootstrap.Modal('#editHrModal');
-    load();
+    try {
+        editModal = new bootstrap.Modal('#editHrModal');
+        newModal = new bootstrap.Modal('#newHrModal');
+        load();
+    } catch (e) {
+        console.error('Modal initialization error:', e);
+        THR.toast('Failed to initialize modals', 'danger');
+    }
 });
+
 document.getElementById('newHrForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    try { await THR.api('/company/hr', { method: 'POST', body: THR.formData(e.target) }); THR.toast('Created','success'); bootstrap.Modal.getInstance('#newHrModal').hide(); e.target.reset(); load(); }
-    catch (err) { THR.toast(err.message, 'danger'); }
+    try { 
+        await THR.api('/company/hr', { method: 'POST', body: THR.formData(e.target) }); 
+        THR.toast('Created','success'); 
+        if (newModal) {
+            newModal.hide();
+            e.target.reset();
+        }
+        load(); 
+    } catch (err) {
+        console.error('Create HR error:', err);
+        THR.toast(err.message, 'danger'); 
+    }
 });
+
 document.getElementById('editHrForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = THR.formData(e.target); const id = data.id; delete data.id;
-    try { await THR.api(`/company/hr/${id}`, { method: 'PUT', body: data }); THR.toast('Updated','success'); editModal.hide(); load(); }
-    catch (err) { THR.toast(err.message, 'danger'); }
+    const data = THR.formData(e.target); 
+    const id = data.id; 
+    delete data.id;
+    try { 
+        await THR.api(`/company/hr/${id}`, { method: 'PUT', body: data }); 
+        THR.toast('Updated','success'); 
+        if (editModal) editModal.hide();
+        load(); 
+    } catch (err) {
+        console.error('Update HR error:', err);
+        THR.toast(err.message, 'danger'); 
+    }
 });
 </script>
 @endpush

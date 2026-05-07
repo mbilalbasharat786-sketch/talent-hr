@@ -334,4 +334,125 @@ class ApplicationController extends Controller
             'interview' => $interview,
         ]);
     }
+
+    public function hire(Request $request, JobApplication $application)
+    {
+        $this->authorizeApplicationOwnership($request, $application);
+
+        if (! in_array($application->status, ['interview_scheduled', 'shortlisted'], true)) {
+            return response()->json([
+                'message' => 'Candidate must be interviewed or shortlisted before hiring.',
+            ], 422);
+        }
+
+        $request->validate([
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'salary' => ['required', 'string', 'min:3'],
+            'position' => ['required', 'string', 'min:3'],
+            'employment_type' => ['required', Rule::in(['full_time', 'part_time', 'contract', 'internship'])],
+            'offer_letter_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+
+        // Update application status to hired
+        $application->update([
+            'status' => 'hired',
+            'rejection_reason' => null,
+        ]);
+
+        // Store offer letter if provided
+        $offerLetterPath = null;
+        if ($request->hasFile('offer_letter_file')) {
+            $offerLetterPath = $request->file('offer_letter_file')->store('offer-letters');
+        }
+
+        // Create hiring notification for candidate
+        Notification::create([
+            'user_id' => $application->candidate_id,
+            'type' => 'system_alert',
+            'title' => 'Congratulations! You are hired!',
+            'message' => "You have been hired for the position of {$request->position} starting from {$startDate->format('Y-m-d')}. Salary: {$request->salary}.",
+        ]);
+
+        // Log the hiring action
+        ActivityLogger::log(
+            'hire_candidate',
+            'hr_applications',
+            "Candidate {$application->candidate->name} hired for position {$request->position} by HR {$request->user()->email}. Start date: {$startDate->format('Y-m-d')}.",
+            $request
+        );
+
+        // Update job status if all positions are filled
+        $job = $application->job;
+        $hiredCount = JobApplication::where('job_id', $job->id)
+            ->where('status', 'hired')
+            ->count();
+
+        if ($hiredCount >= $job->candidates_required) {
+            $job->update(['status' => 'filled']);
+        }
+
+        return response()->json([
+            'message' => 'Candidate hired successfully!',
+            'application' => $application->fresh(['candidate:id,name,email', 'job:id,title']),
+            'hiring_details' => [
+                'start_date' => $startDate->format('Y-m-d'),
+                'salary' => $request->salary,
+                'position' => $request->position,
+                'employment_type' => $request->employment_type,
+                'offer_letter_file' => $offerLetterPath,
+            ],
+        ]);
+    }
+
+    public function completeInterview(Request $request, JobApplication $application)
+    {
+        $this->authorizeApplicationOwnership($request, $application);
+
+        if ($application->status !== 'interview_scheduled') {
+            return response()->json([
+                'message' => 'Application must have interview scheduled to complete.',
+            ], 422);
+        }
+
+        $request->validate([
+            'result' => ['required', Rule::in(['passed', 'failed'])],
+            'feedback' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $interview = $application->interview;
+        if ($interview) {
+            $interview->update([
+                'status' => 'completed',
+                'result' => $request->result,
+                'feedback' => $request->feedback,
+            ]);
+        }
+
+        // Update application status based on interview result
+        $newStatus = $request->result === 'passed' ? 'interview_passed' : 'rejected';
+        $application->update([
+            'status' => $newStatus,
+        ]);
+
+        Notification::create([
+            'user_id' => $application->candidate_id,
+            'type' => 'system_alert',
+            'title' => 'Interview completed',
+            'message' => "Your interview was marked as {$request->result}.",
+        ]);
+
+        ActivityLogger::log(
+            'complete_interview',
+            'hr_applications',
+            "Interview for application {$application->id} marked {$request->result} by HR {$request->user()->email}.",
+            $request
+        );
+
+        return response()->json([
+            'message' => 'Interview completed successfully.',
+            'application' => $application->fresh(['candidate:id,name,email', 'job:id,title', 'interview']),
+        ]);
+    }
 }

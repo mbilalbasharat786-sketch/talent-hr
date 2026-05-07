@@ -133,6 +133,17 @@ Route::prefix('company')->group(function () {
 
 Route::prefix('candidate')->group(function () {
     Route::post('/login', [CandidateAuthController::class, 'login']);
+    Route::post('/register', [CandidateAuthController::class, 'register']);
+
+// ---------- PUBLIC ----------
+Route::prefix('public')->group(function () {
+    Route::get('/jobs', [App\Http\Controllers\Api\Public\JobController::class, 'index']);
+    Route::get('/jobs/{id}', [App\Http\Controllers\Api\Public\JobController::class, 'show']);
+    Route::get('/jobs/categories', [App\Http\Controllers\Api\Public\JobController::class, 'categories']);
+    Route::get('/jobs/featured-companies', [App\Http\Controllers\Api\Public\JobController::class, 'featuredCompanies']);
+    Route::get('/jobs/statistics', [App\Http\Controllers\Api\Public\JobController::class, 'statistics']);
+    Route::get('/jobs/search', [App\Http\Controllers\Api\Public\JobController::class, 'search']);
+});
 
     Route::middleware(['auth:sanctum', 'candidate_user'])->group(function () {
         Route::get('/me', [CandidateAuthController::class, 'me']);
@@ -170,6 +181,8 @@ Route::prefix('hr')->group(function () {
         Route::post('/applications/{application}/assign-task', [HrApplicationController::class, 'assignTask']);
         Route::post('/applications/{application}/review-task', [HrApplicationController::class, 'reviewTask']);
         Route::post('/applications/{application}/schedule-interview', [HrApplicationController::class, 'scheduleInterview']);
+        Route::post('/applications/{application}/complete-interview', [HrApplicationController::class, 'completeInterview']);
+        Route::post('/applications/{application}/hire', [HrApplicationController::class, 'hire']);
         Route::get('/assessments', [HrAssessmentController::class, 'index']);
         Route::get('/assessments/{assessment}', [HrAssessmentController::class, 'show']);
         Route::post('/assessments', [HrAssessmentController::class, 'store']);
