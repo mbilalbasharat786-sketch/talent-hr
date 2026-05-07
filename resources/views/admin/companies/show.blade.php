@@ -31,12 +31,33 @@ async function load() {
         const c = res.company || res;
         document.getElementById('companyName').textContent = c.name;
         document.getElementById('companyMeta').innerHTML = `${THR.escapeHtml(c.email)} · ${THR.statusPill(c.status)} · Trust: ${THR.escapeHtml(c.trust_level||'basic')}`;
-        document.getElementById('profileBody').innerHTML = `
+        // Format office locations
+function formatOfficeLocations(locations) {
+    if (!locations) return '—';
+    if (Array.isArray(locations)) {
+        return locations.map(loc => `${loc.city}${loc.address ? ', ' + loc.address : ''}`).join('; ');
+    }
+    return THR.escapeHtml(locations);
+}
+
+// Format working hours
+function formatWorkingHours(hours) {
+    if (!hours) return '—';
+    if (Array.isArray(hours)) {
+        return hours.map(wh => `${wh.day}: ${wh.start} - ${wh.end}`).join('; ');
+    }
+    return THR.escapeHtml(hours);
+}
+
+document.getElementById('profileBody').innerHTML = `
             <dl class="row mb-0">
                 <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">${THR.escapeHtml(c.phone||'—')}</dd>
                 <dt class="col-sm-3">Industry</dt><dd class="col-sm-9">${THR.escapeHtml(c.industry||'—')}</dd>
-                <dt class="col-sm-3">Website</dt><dd class="col-sm-9">${THR.escapeHtml(c.website||'—')}</dd>
-                <dt class="col-sm-3">About</dt><dd class="col-sm-9">${THR.escapeHtml(c.about||'—')}</dd>
+                <dt class="col-sm-3">Website</dt><dd class="col-sm-9">${c.website ? `<a href="${THR.escapeHtml(c.website)}" target="_blank">${THR.escapeHtml(c.website)}</a>` : '—'}</dd>
+                <dt class="col-sm-3">About</dt><dd class="col-sm-9">${c.about ? THR.escapeHtml(c.about) : '—'}</dd>
+                <dt class="col-sm-3">Company Size</dt><dd class="col-sm-9">${THR.escapeHtml(c.company_size||'—')}</dd>
+                <dt class="col-sm-3">Office Locations</dt><dd class="col-sm-9">${formatOfficeLocations(c.office_locations)}</dd>
+                <dt class="col-sm-3">Working Hours</dt><dd class="col-sm-9">${formatWorkingHours(c.working_hours)}</dd>
                 <dt class="col-sm-3">Rejection</dt><dd class="col-sm-9">${THR.escapeHtml(c.rejection_reason||'—')}</dd>
             </dl>`;
         const docs = c.verification_documents || res.verification_documents || [];
