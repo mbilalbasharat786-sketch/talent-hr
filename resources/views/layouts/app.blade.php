@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'TalentHR') · TalentHR</title>
+    <title>@yield('title', 'TalentHR') - TalentHR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
@@ -21,11 +24,11 @@
     };
 @endphp
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top" style="height:56px;">
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container-fluid">
-        <button class="btn btn-light d-lg-none me-2" type="button" id="sidebarToggle"><i class="bi bi-list"></i></button>
+        <button class="btn btn-light me-2" type="button" id="sidebarToggle" title="Toggle navigation"><i class="bi bi-layout-sidebar-inset"></i></button>
         <a class="navbar-brand fw-bold text-primary" href="{{ $brand['home'] }}">
-            <i class="bi bi-mortarboard-fill me-1"></i>TalentHR
+            <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>TalentHR
             <span class="text-muted fs-6 fw-normal ms-2 d-none d-md-inline">/ {{ $brand['label'] }}</span>
         </a>
         <div class="ms-auto d-flex align-items-center gap-2">
@@ -58,13 +61,14 @@
     <aside class="app-sidebar" id="appSidebar">
         @include('layouts.partials.sidebar-' . $role)
     </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <main class="app-main">
         @yield('content')
     </main>
 </div>
 
 <footer class="text-center text-muted small py-3 border-top bg-white">
-    &copy; {{ date('Y') }} TalentHR · Secure hiring platform
+    &copy; {{ date('Y') }} TalentHR - Secure hiring platform
 </footer>
 
 <div id="toastStack"></div>
@@ -78,9 +82,27 @@
         const u = window.THR.Auth.user;
         if (u) document.getElementById('navUserName').textContent = u.name || u.email || 'Account';
         window.THR.bindLogout(@json($role));
+
         const tog = document.getElementById('sidebarToggle');
-        if (tog) tog.addEventListener('click', () => document.getElementById('appSidebar').classList.toggle('open'));
-        // Highlight active nav link
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeMobileSidebar = () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        };
+        if (localStorage.getItem('thr_sidebar_collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        if (tog) tog.addEventListener('click', () => {
+            if (window.matchMedia('(max-width: 992px)').matches) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show', sidebar.classList.contains('open'));
+            } else {
+                document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('thr_sidebar_collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            }
+        });
+        if (overlay) overlay.addEventListener('click', closeMobileSidebar);
+        sidebar.querySelectorAll('.nav-link').forEach(a => a.addEventListener('click', closeMobileSidebar));
+
         const path = window.location.pathname;
         document.querySelectorAll('.app-sidebar .nav-link').forEach(a => {
             if (a.getAttribute('href') === path) a.classList.add('active');

@@ -11,6 +11,33 @@ use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
 {
+    public function jobs(Request $request)
+    {
+        $candidate = $request->user();
+
+        $jobs = HrJob::with([
+            'company:id,name,industry,trust_level,status',
+            'assessment:id,title,time_limit,status',
+        ])
+            ->where('status', 'live')
+            ->whereNotNull('assessment_id')
+            ->latest()
+            ->paginate(12);
+
+        $appliedJobIds = JobApplication::where('candidate_id', $candidate->id)
+            ->whereIn('job_id', $jobs->getCollection()->pluck('id'))
+            ->pluck('job_id')
+            ->all();
+
+        $jobs->getCollection()->transform(function ($job) use ($appliedJobIds) {
+            $job->already_applied = in_array($job->id, $appliedJobIds, true);
+
+            return $job;
+        });
+
+        return response()->json($jobs);
+    }
+
     public function apply(Request $request)
     {
         $candidate = $request->user();

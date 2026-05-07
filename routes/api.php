@@ -140,6 +140,7 @@ Route::prefix('candidate')->group(function () {
         Route::get('/dashboard', [CandidateDashboardController::class, 'index']);
         Route::get('/profile', [CandidateProfileController::class, 'show']);
         Route::put('/profile', [CandidateProfileController::class, 'update']);
+        Route::get('/jobs', [CandidateApplicationController::class, 'jobs']);
         Route::post('/apply', [CandidateApplicationController::class, 'apply']);
         Route::get('/applications', [CandidateApplicationController::class, 'index']);
         Route::get('/applications/{application}', [CandidateApplicationController::class, 'show']);
