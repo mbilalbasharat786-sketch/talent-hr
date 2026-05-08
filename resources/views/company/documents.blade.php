@@ -88,9 +88,6 @@ async function loadDocs() {
                 </td>
             </tr>`;
         }).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
-    } catch (e) { 
-        THR.toast('Error loading documents', 'danger'); 
-    }
 } catch (e) { 
         THR.toast('Error loading documents', 'danger'); 
     }
