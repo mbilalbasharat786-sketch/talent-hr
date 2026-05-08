@@ -70,16 +70,28 @@ async function loadDocs() {
         const docs = (r.company && r.company.verification_documents) || r.verification_documents || [];
         const tb = document.getElementById('docList');
         
-        tb.innerHTML = docs.length ? docs.map(d => `
+        tb.innerHTML = docs.length ? docs.map(d => {
+            // Hum check karenge ke URL file_path mein hai ya secure_url mein
+            const fileUrl = d.file_path || d.secure_url; 
+            
+            return `
             <tr>
                 <td><strong>${docTypeMap[d.type] || d.type.toUpperCase()}</strong></td>
                 <td>${THR.statusPill(d.status)}</td>
                 <td>${THR.fmtDate(d.created_at)}</td>
                 <td>
-                    ${d.secure_url ? `<button type="button" class="btn btn-sm btn-outline-primary" onclick="THR.openFile('${THR.escapeHtml(d.secure_url)}')"><i class="bi bi-eye"></i> View</button>` : 'N/A'}
+                    ${fileUrl ? `
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                onclick="window.open('${fileUrl}', '_blank')">
+                            <i class="bi bi-eye"></i> View
+                        </button>` : 'N/A'}
                 </td>
-            </tr>`).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
+            </tr>`;
+        }).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
     } catch (e) { 
+        THR.toast('Error loading documents', 'danger'); 
+    }
+} catch (e) { 
         THR.toast('Error loading documents', 'danger'); 
     }
 }
