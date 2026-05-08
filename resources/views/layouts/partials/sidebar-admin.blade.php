@@ -5,6 +5,8 @@
 <a class="nav-link" href="/admin/companies"><i class="bi bi-building-check"></i><span>Companies</span></a>
 <a class="nav-link" href="/admin/supervisors"><i class="bi bi-person-badge"></i><span>Supervisors</span></a>
 <a class="nav-link" href="/admin/internships"><i class="bi bi-file-earmark-medical"></i><span>Internships</span></a>
+<div class="nav-section">Content Management</div>
+<a class="nav-link" href="/admin/jobs"><i class="bi bi-briefcase"></i><span>Job Management</span></a>
 <div class="nav-section">Users & Monitoring</div>
 <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i><span>User Management</span></a>
 <a class="nav-link" href="/admin/hr-monitoring"><i class="bi bi-eye"></i><span>HR Monitoring</span></a>

@@ -1,14 +1,28 @@
 @extends('layouts.app', ['role' => 'company'])
 @section('title', 'HR Users')
-@section('content')
-<div class="page-header"><div><h1>HR Users</h1><p>Create and manage HR accounts under your company</p></div>
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newHrModal"><i class="bi bi-plus-circle"></i> New HR</button></div>
-<div class="card"><div class="card-body p-0"><table class="table mb-0">
-<thead><tr><th>Name</th><th>Email</th><th>HR Type</th><th>Status</th><th></th></tr></thead>
-<tbody id="rows"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody></table></div></div>
 
-<div class="modal fade" id="newHrModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-    <form id="newHrForm">
+@section('content')
+<div class="page-header">
+    <div><h1>HR Users</h1><p>Create and manage HR accounts under your company</p></div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newHrModal">
+        <i class="bi bi-plus-circle"></i> New HR
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead><tr><th>Name</th><th>Email</th><th>HR Type</th><th>Status</th><th></th></tr></thead>
+            <tbody id="rows"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+@endsection 
+
+<div class="modal fade" id="newHrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="newHrForm">
         <input type="hidden" name="role" value="hr">
         <div class="modal-header"><h5 class="modal-title">New HR User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">

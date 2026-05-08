@@ -52,6 +52,8 @@ Route::prefix('admin')->group(function () {
     Route::view('/fraud-logs', 'admin.fraud-logs.index');
     Route::get('/fraud-logs/{id}', fn ($id) => view('admin.fraud-logs.show', ['id' => (int) $id]))->whereNumber('id');
     Route::view('/activity-logs', 'admin.activity-logs.index');
+    Route::view('/jobs', 'admin.jobs.index');
+    Route::get('/jobs/{id}', fn ($id) => view('admin.jobs.show', ['id' => (int) $id]))->whereNumber('id');
 });
 
 // ---------- COMPANY ----------
@@ -85,6 +87,7 @@ Route::prefix('candidate')->group(function () {
     Route::view('/dashboard', 'candidate.dashboard');
     Route::view('/profile', 'candidate.profile');
     Route::view('/jobs', 'candidate.jobs');
+    Route::view('/apply', 'candidate.apply');
     Route::view('/applications', 'candidate.applications.index');
     Route::get('/applications/{id}', fn ($id) => view('candidate.applications.show', ['id' => (int) $id]))->whereNumber('id');
     Route::view('/assessment', 'candidate.assessment');
