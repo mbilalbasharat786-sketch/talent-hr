@@ -45,11 +45,13 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('company-logos');
+          $path = $request->file('logo')->store('company-logos', 'public');
+    $data['logo'] = Storage::disk('public')->url($path);
         }
 
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('company-cover-images');
+            $path = $request->file('cover_image')->store('company-cover-images', 'public');
+            $data['cover_image'] = Storage::disk('public')->url($path);
         }
 
         if ($request->has('office_locations') && is_string($request->office_locations)) {
