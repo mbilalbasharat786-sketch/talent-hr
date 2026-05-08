@@ -6,70 +6,39 @@
 <form id="profileForm">
     <div class="row g-3">
         <div class="col-md-6"><label class="form-label">Name</label><input class="form-control" name="name"></div>
+        {{-- Email field ko name attribute diya hai taake THR.fillForm isay pakar sakay --}}
         <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" name="email" type="email" readonly></div>
         <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" name="phone" maxlength="30"></div>
         <div class="col-md-6"><label class="form-label">Industry</label><input class="form-control" name="industry"></div>
         <div class="col-md-6"><label class="form-label">Company size</label><input class="form-control" name="company_size"></div>
         <div class="col-md-6"><label class="form-label">Website</label><input class="form-control" name="website"></div>
         <div class="col-12"><label class="form-label">About</label><textarea class="form-control" name="about" id="aboutEditor" rows="6"></textarea></div>
-        <div class="col-12">
+        
+        <div class="col-md-6">
             <label class="form-label">Logo</label>
-            <div class="mb-3">
-                <div id="logoPreview" class="mb-2"></div>
-                <input type="file" class="form-control" id="logoUpload" accept="image/*">
-                <small class="text-muted">Upload company logo (PNG, JPG, max 2MB)</small>
-            </div>
+            <div id="logoPreview" class="mb-2"></div>
+            <input type="file" class="form-control" id="logoUpload" accept="image/*">
+            <small class="text-muted">Max 2MB</small>
         </div>
-        <div class="col-12">
+        <div class="col-md-6">
             <label class="form-label">Cover Image</label>
-            <div class="mb-3">
-                <div id="coverPreview" class="mb-2"></div>
-                <input type="file" class="form-control" id="coverUpload" accept="image/*">
-                <small class="text-muted">Upload cover image (PNG, JPG, max 5MB)</small>
-            </div>
+            <div id="coverPreview" class="mb-2"></div>
+            <input type="file" class="form-control" id="coverUpload" accept="image/*">
+            <small class="text-muted">Max 5MB</small>
         </div>
+
         <div class="col-12">
             <label class="form-label">Office Locations</label>
             <div id="officeLocationsContainer" class="mb-3">
-                <div class="row g-2 mb-2" data-location-index="0">
-                    <div class="col-md-5">
-                        <input type="text" class="form-control" placeholder="City, Country" name="office_locations[0][city]">
-                    </div>
-                    <div class="col-md-5">
-                        <input type="text" class="form-control" placeholder="Address" name="office_locations[0][address]">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeLocation(this)" style="display: none;">Remove</button>
-                    </div>
-                </div>
+                {{-- Dynamic rows yahan load hongi --}}
             </div>
             <button type="button" class="btn btn-outline-primary btn-sm" onclick="addLocation()">+ Add Location</button>
         </div>
+
         <div class="col-12">
             <label class="form-label">Working Hours</label>
             <div id="workingHoursContainer">
-                <div class="row g-2 mb-2" data-day-index="0">
-                    <div class="col-md-3">
-                        <select class="form-select" name="working_hours[0][day]">
-                            <option value="monday">Monday</option>
-                            <option value="tuesday">Tuesday</option>
-                            <option value="wednesday">Wednesday</option>
-                            <option value="thursday">Thursday</option>
-                            <option value="friday">Friday</option>
-                            <option value="saturday">Saturday</option>
-                            <option value="sunday">Sunday</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="time" class="form-control" placeholder="Start" name="working_hours[0][start]">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="time" class="form-control" placeholder="End" name="working_hours[0][end]">
-                    </div>
-                    <div class="col-md-3">
-                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeWorkingHour(this)" style="display: none;">Remove</button>
-                    </div>
-                </div>
+                {{-- Dynamic rows yahan load hongi --}}
             </div>
             <div class="mt-2">
                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="addWorkingHour()">+ Add Time Slot</button>
@@ -77,266 +46,173 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-primary mt-3">Save changes</button>
+    <button class="btn btn-primary mt-4" type="submit">Save changes</button>
 </form>
 </div></div>
+
 @push('scripts')
-<!-- TinyMCE Rich Text Editor -->
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 let aboutEditor;
-let logoData = null;
-let coverData = null;
 
-// Initialize TinyMCE
+// 1. TinyMCE Initialization
 document.addEventListener('DOMContentLoaded', function() {
     tinymce.init({
         selector: '#aboutEditor',
-        height: 300,
+        height: 250,
         menubar: false,
-        plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-            alignleft aligncenter alignright alignjustify | \
-            bullist numlist outdent indent | removeformat | help',
-        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
         setup: function(editor) {
             aboutEditor = editor;
-            // Load content after initialization
-            setTimeout(() => load(), 500);
+            editor.on('init', () => load()); // Editor load hone ke baad data mangwao
         }
     });
 });
 
+// 2. Load Data from API
 async function load() {
     try {
         const r = await THR.api('/company/profile');
         const c = r.company || r;
         const form = document.getElementById('profileForm');
+        
+        // Basic fields (Name, Email, etc.)
         THR.fillForm(form, c);
-        if (Array.isArray(c.office_locations)) form.office_locations.value = c.office_locations.join(', ');
-        if (c.working_hours && typeof c.working_hours === 'object') form.working_hours.value = JSON.stringify(c.working_hours);
         
-        // Set rich text editor content
-        if (aboutEditor && c.about) {
-            aboutEditor.setContent(c.about);
-        }
-        
-        // Show existing images
-});
+        // About Editor
+        if (aboutEditor) aboutEditor.setContent(c.about || '');
 
-// Handle file uploads
-document.getElementById('logoUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        if (file.size > 2097152) { // 2MB
-            THR.toast('Logo file size must be less than 2MB', 'danger');
-            e.target.value = '';
-            return;
+        // Office Locations render
+        const locContainer = document.getElementById('officeLocationsContainer');
+        locContainer.innerHTML = '';
+        if (c.office_locations && Array.isArray(c.office_locations) && c.office_locations.length) {
+            c.office_locations.forEach(loc => addLocation(loc));
+        } else {
+            addLocation(); // Default khali row
         }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            logoData = e.target.result;
-            document.getElementById('logoPreview').innerHTML = 
-                `<img src="${logoData}" style="max-width: 150px; max-height: 100px; border: 1px solid #ddd;" class="rounded">`;
-        };
-        reader.readAsDataURL(file);
+
+        // Working Hours render
+        const hoursContainer = document.getElementById('workingHoursContainer');
+        hoursContainer.innerHTML = '';
+        if (c.working_hours && Array.isArray(c.working_hours) && c.working_hours.length) {
+            c.working_hours.forEach(wh => addWorkingHour(wh));
+        } else {
+            addWorkingHour(); // Default khali row
+        }
+
+        // Image Previews
+        if (c.logo) {
+            document.getElementById('logoPreview').innerHTML = `<img src="${c.logo}" class="img-thumbnail" style="height:80px">`;
+        }
+        if (c.cover_image) {
+            document.getElementById('coverPreview').innerHTML = `<img src="${c.cover_image}" class="img-thumbnail" style="height:80px; width:100%; object-fit:cover;">`;
+        }
+
+    } catch (e) { 
+        console.error('Load Error:', e);
+        THR.toast('Failed to load profile', 'danger');
     }
-});
+}
 
-document.getElementById('coverUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        if (file.size > 5242880) { // 5MB
-            THR.toast('Cover image file size must be less than 5MB', 'danger');
-            e.target.value = '';
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            coverData = e.target.result;
-            document.getElementById('coverPreview').innerHTML = 
-                `<img src="${coverData}" style="max-width: 300px; max-height: 150px; border: 1px solid #ddd;" class="rounded">`;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Office locations management
-let locationIndex = 1;
-function addLocation() {
+// 3. Dynamic Row Handlers
+function addLocation(data = {}) {
     const container = document.getElementById('officeLocationsContainer');
-    const newLocation = document.createElement('div');
-    newLocation.className = 'row g-2 mb-2';
-    newLocation.setAttribute('data-location-index', locationIndex);
-    newLocation.innerHTML = `
-        <div class="col-md-5">
-            <input type="text" class="form-control" placeholder="City, Country" name="office_locations[${locationIndex}][city]">
-        </div>
-        <div class="col-md-5">
-            <input type="text" class="form-control" placeholder="Address" name="office_locations[${locationIndex}][address]">
-        </div>
-        <div class="col-md-2">
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeLocation(this)">Remove</button>
-        </div>
+    const div = document.createElement('div');
+    div.className = 'row g-2 mb-2 loc-row';
+    div.innerHTML = `
+        <div class="col-md-5"><input type="text" class="form-control" placeholder="City, Country" value="${data.city || ''}" required></div>
+        <div class="col-md-5"><input type="text" class="form-control" placeholder="Full Address" value="${data.address || ''}" required></div>
+        <div class="col-md-2"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.parentElement.parentElement.remove()">Remove</button></div>
     `;
-    container.appendChild(newLocation);
-    locationIndex++;
-    updateRemoveButtons();
+    container.appendChild(div);
 }
 
-function removeLocation(button) {
-    button.closest('[data-location-index]').remove();
-    updateRemoveButtons();
-}
-
-// Working hours management
-let dayIndex = 1;
-function addWorkingHour() {
+function addWorkingHour(data = {}) {
     const container = document.getElementById('workingHoursContainer');
-    const newHour = document.createElement('div');
-    newHour.className = 'row g-2 mb-2';
-    newHour.setAttribute('data-day-index', dayIndex);
-    newHour.innerHTML = `
-        <div class="col-md-3">
-            <select class="form-select" name="working_hours[${dayIndex}][day]">
-                <option value="">Select Day</option>
-                <option value="monday">Monday</option>
-                <option value="tuesday">Tuesday</option>
-                <option value="wednesday">Wednesday</option>
-                <option value="thursday">Thursday</option>
-                <option value="friday">Friday</option>
-                <option value="saturday">Saturday</option>
-                <option value="sunday">Sunday</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <input type="time" class="form-control" placeholder="Start" name="working_hours[${dayIndex}][start]">
-        </div>
-        <div class="col-md-3">
-            <input type="time" class="form-control" placeholder="End" name="working_hours[${dayIndex}][end]">
-        </div>
-        <div class="col-md-3">
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeWorkingHour(this)">Remove</button>
-        </div>
+    const div = document.createElement('div');
+    div.className = 'row g-2 mb-2 hour-row';
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    let options = days.map(d => `<option value="${d}" ${data.day === d ? 'selected' : ''}>${d.charAt(0).toUpperCase()+d.slice(1)}</option>`).join('');
+    
+    div.innerHTML = `
+        <div class="col-md-3"><select class="form-select">${options}</select></div>
+        <div class="col-md-3"><input type="time" class="form-control" value="${data.start || ''}" required></div>
+        <div class="col-md-3"><input type="time" class="form-control" value="${data.end || ''}" required></div>
+        <div class="col-md-3"><button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="this.parentElement.parentElement.remove()">Remove</button></div>
     `;
-    container.appendChild(newHour);
-    dayIndex++;
-    updateRemoveButtons();
-}
-
-function removeWorkingHour(button) {
-    button.closest('[data-day-index]').remove();
-    updateRemoveButtons();
+    container.appendChild(div);
 }
 
 function setStandardHours() {
-    const container = document.getElementById('workingHoursContainer');
-    container.innerHTML = '';
-    dayIndex = 0;
-    
-    const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    weekdays.forEach(day => {
-        addWorkingHour();
-        const lastRow = container.querySelector(`[data-day-index="${dayIndex - 1}"]`);
-        if (lastRow) {
-            const daySelect = lastRow.querySelector(`select[name="working_hours[${dayIndex - 1}][day]"]`);
-            const startInput = lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][start]"]`);
-            const endInput = lastRow.querySelector(`input[name="working_hours[${dayIndex - 1}][end]"]`);
-            
-            if (daySelect) daySelect.value = day;
-            if (startInput) startInput.value = '09:00';
-            if (endInput) endInput.value = '17:00';
+    document.getElementById('workingHoursContainer').innerHTML = '';
+    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach(d => {
+        addWorkingHour({day: d, start: '09:00', end: '17:00'});
+    });
+}
+
+// 4. File Preview Logic
+function setupFilePreview(inputId, previewId) {
+    document.getElementById(inputId).addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ex) => {
+                document.getElementById(previewId).innerHTML = `<img src="${ex.target.result}" class="img-thumbnail" style="height:80px">`;
+            };
+            reader.readAsDataURL(file);
         }
     });
-    updateRemoveButtons();
 }
+setupFilePreview('logoUpload', 'logoPreview');
+setupFilePreview('coverUpload', 'coverPreview');
 
-function updateRemoveButtons() {
-    const locationButtons = document.querySelectorAll('#officeLocationsContainer button');
-    locationButtons.forEach(btn => {
-        btn.style.display = locationButtons.length > 1 ? 'block' : 'none';
-    });
-    
-    const hourButtons = document.querySelectorAll('#workingHoursContainer button');
-    hourButtons.forEach(btn => {
-        btn.style.display = hourButtons.length > 1 ? 'block' : 'none';
-    });
-}
-
-load();
+// 5. Submit Form
 document.getElementById('profileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = THR.formData(e.target);
-    
-    // Get rich text editor content
-    if (aboutEditor) {
-        data.about = aboutEditor.getContent();
-    }
-    
-    // Process office locations
-    const officeLocations = [];
-    document.querySelectorAll('#officeLocationsContainer [data-location-index]').forEach(row => {
-        const index = row.getAttribute('data-location-index');
-        const city = row.querySelector(`input[name="office_locations[${index}][city]"]`).value;
-        const address = row.querySelector(`input[name="office_locations[${index}][address]"]`).value;
-        if (city || address) {
-            officeLocations.push({ city, address });
-        }
-    });
-    data.office_locations = officeLocations;
-    
-    // Process working hours
-    const workingHours = [];
-    document.querySelectorAll('#workingHoursContainer [data-day-index]').forEach(row => {
-        const index = row.getAttribute('data-day-index');
-        const day = row.querySelector(`select[name="working_hours[${index}][day]"]`).value;
-        const start = row.querySelector(`input[name="working_hours[${index}][start]"]`).value;
-        const end = row.querySelector(`input[name="working_hours[${index}][end]"]`).value;
-        if (day && start && end) {
-            workingHours.push({ day, start, end });
-        }
-    });
-    data.working_hours = workingHours;
-    
-    delete data.email;
-    
-    // Handle image uploads
     const formData = new FormData();
     
-    // Add regular form data
-    Object.keys(data).forEach(key => {
-        if (key !== 'logo' && key !== 'cover_image') {
-            formData.append(key, JSON.stringify(data[key]));
-        }
+    // Regular inputs
+    formData.append('name', e.target.name.value);
+    formData.append('phone', e.target.phone.value);
+    formData.append('industry', e.target.industry.value);
+    formData.append('company_size', e.target.company_size.value);
+    formData.append('website', e.target.website.value);
+    formData.append('about', aboutEditor.getContent());
+
+    // Office Locations (Array to String)
+    const locations = [];
+    document.querySelectorAll('.loc-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if(inputs[0].value) locations.push({ city: inputs[0].value, address: inputs[1].value });
     });
-    
-    // Add image files if they exist
+    formData.append('office_locations', JSON.stringify(locations));
+
+    // Working Hours (Array to String)
+    const hours = [];
+    document.querySelectorAll('.hour-row').forEach(row => {
+        const select = row.querySelector('select');
+        const inputs = row.querySelectorAll('input');
+        if(inputs[0].value) hours.push({ day: select.value, start: inputs[0].value, end: inputs[1].value });
+    });
+    formData.append('working_hours', JSON.stringify(hours));
+
+    // Images
     const logoFile = document.getElementById('logoUpload').files[0];
     const coverFile = document.getElementById('coverUpload').files[0];
-    
-    if (logoFile) {
-        formData.append('logo', logoFile);
-    }
-    if (coverFile) {
-        formData.append('cover_image', coverFile);
-    }
-    
-    try { 
+    if (logoFile) formData.append('logo', logoFile);
+    if (coverFile) formData.append('cover_image', coverFile);
+
+    try {
+        // Laravel PUT with Files fix: POST method + Method Override Header
         await THR.api('/company/profile', { 
-            method: 'PUT', 
+            method: 'POST', 
             body: formData,
-            headers: {} // Let browser set Content-Type for FormData
-        }); 
-        THR.toast('Profile updated successfully','success'); 
-        load(); // Reload to show new images
+            headers: { 'X-HTTP-Method-Override': 'PUT' }
+        });
+        THR.toast('Profile updated successfully!', 'success');
+        load(); // Data refresh taake UI update ho jaye
+    } catch (err) { 
+        THR.toast(err.message || 'Update failed', 'danger'); 
     }
-    catch (err) { THR.toast(err.message, 'danger'); }
 });
 </script>
 @endpush
