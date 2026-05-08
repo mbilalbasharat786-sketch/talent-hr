@@ -11,21 +11,15 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">SECP Registration Certificate</label>
                         <input type="file" name="secp" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
-                        <small class="text-muted">Upload SECP document if not submitted.</small>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold">NTN / Tax Certificate</label>
                         <input type="file" name="ntn" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
-                        <small class="text-muted">Upload your NTN certificate.</small>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold">Address Proof / Utility Bill</label>
                         <input type="file" name="address" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
-                        <small class="text-muted">Electricity bill or rental agreement.</small>
                     </div>
-
                     <div class="mt-4">
                         <button class="btn btn-primary w-100" type="submit" id="uploadBtn">Upload Selected Documents</button>
                     </div>
@@ -57,7 +51,6 @@
 
 @push('scripts')
 <script>
-// Helper function to map type codes to readable names
 const docTypeMap = {
     'secp': 'SECP Certificate',
     'ntn': 'NTN / Tax Certificate',
@@ -70,9 +63,14 @@ async function loadDocs() {
         const docs = (r.company && r.company.verification_documents) || r.verification_documents || [];
         const tb = document.getElementById('docList');
         
-        tb.innerHTML = docs.length ? docs.map(d => {
-            // Hum check karenge ke URL file_path mein hai ya secure_url mein
-            const fileUrl = d.file_path || d.secure_url; 
+        if (!docs.length) {
+            tb.innerHTML = '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
+            return;
+        }
+
+        tb.innerHTML = docs.map(d => {
+            // Check file_path first (new way) then secure_url (old way)
+            let fileUrl = d.file_path || d.secure_url;
             
             return `
             <tr>
@@ -81,14 +79,14 @@ async function loadDocs() {
                 <td>${THR.fmtDate(d.created_at)}</td>
                 <td>
                     ${fileUrl ? `
-                        <button type="button" class="btn btn-sm btn-outline-primary" 
-                                onclick="window.open('${fileUrl}', '_blank')">
+                        <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-eye"></i> View
-                        </button>` : 'N/A'}
+                        </a>` : 'N/A'}
                 </td>
             </tr>`;
-        }).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
-} catch (e) { 
+        }).join('');
+    } catch (e) { 
+        console.error(e);
         THR.toast('Error loading documents', 'danger'); 
     }
 }
@@ -100,29 +98,13 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
     const btn = document.getElementById('uploadBtn');
     const fd = new FormData(e.target);
 
-    // Check if at least one file is selected
-    let hasFile = false;
-    for (let value of fd.values()) {
-        if (value.name) { hasFile = true; break; }
-    }
-
-    if (!hasFile) {
-        THR.toast('Please select at least one document to upload', 'warning');
-        return;
-    }
-
     try {
         btn.disabled = true;
         btn.innerText = 'Uploading...';
-        
-        await THR.api('/company/documents', { 
-            method: 'POST', 
-            body: fd 
-        });
-
+        await THR.api('/company/documents', { method: 'POST', body: fd });
         THR.toast('Documents uploaded successfully', 'success');
-        e.target.reset(); // Form clear kar dein
-        loadDocs(); // List refresh karein
+        e.target.reset();
+        loadDocs();
     } catch (err) { 
         THR.toast(err.message || 'Upload failed', 'danger'); 
     } finally {
