@@ -51,7 +51,7 @@
 </div></div>
 
 @push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/m4arp3f9pv05r7yr6bfzs6f91my2sh6k2a2t2nch4a1o6gg0/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 <script>
 let aboutEditor;
 
