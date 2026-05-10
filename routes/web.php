@@ -34,6 +34,7 @@ Route::view('/company/2fa', 'auth.company-2fa');
 Route::view('/hr/login', 'auth.hr-login');
 Route::view('/candidate/login', 'auth.candidate-login');
 Route::view('/candidate/register', 'auth.candidate-register');
+Route::view('/candidate/verify-email', 'auth.candidate-verify-email');
 
 // ---------- ADMIN ----------
 Route::prefix('admin')->group(function () {

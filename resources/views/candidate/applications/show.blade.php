@@ -103,9 +103,9 @@ async function load() {
             acts.push(`<a class="btn btn-primary" href="/candidate/assessment?application_id=${a.id}"><i class="bi bi-pencil-square"></i> Start assessment</a>`);
         }
         
-        // Show upload button ONLY if task is assigned and not yet passed
-        if (a.task && ['assigned', 'submitted'].includes(a.task.status)) {
-            acts.push(`<button class="btn btn-info text-white" id="openTaskUpload"><i class="bi bi-upload"></i> ${a.task.status === 'submitted' ? 'Re-upload task' : 'Upload task'}</button>`);
+        // Show upload button only before the first submission. Submitted work is locked.
+        if (a.task && a.task.status === 'assigned') {
+            acts.push(`<button class="btn btn-info text-white" id="openTaskUpload"><i class="bi bi-upload"></i> Upload task</button>`);
         }
         
         const actionsDiv = document.getElementById('actions');

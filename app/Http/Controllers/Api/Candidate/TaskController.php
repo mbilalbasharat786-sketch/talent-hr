@@ -28,6 +28,28 @@ class TaskController extends Controller
             ], 404);
         }
 
+        if ($task->status !== 'assigned') {
+            return response()->json([
+                'message' => 'Task has already been submitted and cannot be edited.',
+            ], 422);
+        }
+
+        if ($task->deadline && $task->deadline->isPast()) {
+            return response()->json([
+                'message' => 'Task deadline has passed.',
+            ], 422);
+        }
+
+        $existingSubmission = TaskSubmission::where('task_id', $task->id)
+            ->where('candidate_id', $candidate->id)
+            ->exists();
+
+        if ($existingSubmission) {
+            return response()->json([
+                'message' => 'Task has already been submitted and cannot be edited.',
+            ], 422);
+        }
+
         $path = $request->file('submission_file')->store('candidate-task-submissions');
 
         $submission = TaskSubmission::create([

@@ -30,6 +30,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         console.error('Login error:', err);
         const errorMessage = err.message || 'Login failed';
         window.THR.toast(errorMessage, 'danger'); 
+        if (err.data?.email_verification_required || errorMessage.toLowerCase().includes('verification')) {
+            sessionStorage.setItem('pendingCandidateEmail', data.email);
+            setTimeout(() => location.href = '/candidate/verify-email', 700);
+        }
     }
 });
 </script>

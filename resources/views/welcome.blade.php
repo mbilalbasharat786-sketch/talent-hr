@@ -25,7 +25,7 @@
         <h1 class="display-4 fw-bold">Hire smarter. Verify confidently.</h1>
         <p class="lead opacity-75 mt-3">Anti-fraud hiring pipeline with verified internships, secure assessments, and full audit trails.</p>
         <div class="mt-4 d-flex justify-content-center gap-2 flex-wrap">
-            <a href="/candidate/login" class="btn btn-light btn-lg"><i class="bi bi-person me-1"></i> Candidate Login</a>
+            <a href="/candidate/register" class="btn btn-light btn-lg"><i class="bi bi-person-plus me-1"></i> Candidate Register</a>
             <a href="/company/register" class="btn btn-outline-light btn-lg"><i class="bi bi-building me-1"></i> Register Company</a>
         </div>
     </div>

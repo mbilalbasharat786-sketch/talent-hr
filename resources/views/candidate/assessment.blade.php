@@ -47,6 +47,14 @@ function browserName() {
     if (/Safari/i.test(ua)) return 'Safari';
     return 'Unknown';
 }
+function tabId() {
+    let id = sessionStorage.getItem('assessment_tab_id');
+    if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+        sessionStorage.setItem('assessment_tab_id', id);
+    }
+    return id;
+}
 
 async function logEvent(event_type, metadata = {}) {
     if (!session) return;
@@ -68,7 +76,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     try {
         const res = await THR.api('/candidate/assessment/start', {
             method: 'POST',
-            body: { application_id: applicationId, device_fingerprint: fingerprint(), browser: browserName() }
+            body: { application_id: applicationId, device_fingerprint: fingerprint(), browser: browserName(), tab_id: tabId() }
         });
         session = res.session; submission = res.submission;
         assessment = session.assessment || {};

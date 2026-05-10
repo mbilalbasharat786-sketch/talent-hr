@@ -223,6 +223,7 @@ class CandidateModuleTest extends TestCase
             'password' => 'password',
             'role' => 'candidate',
             'status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         $assessment = Assessment::create([

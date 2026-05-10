@@ -111,6 +111,22 @@ function forceCleanup() {
     document.body.style = '';
 }
 
+function parseJson(value, fallback = null) {
+    if (!value) return fallback;
+    if (typeof value === 'object') return value;
+    try { return JSON.parse(value); } catch (e) { return fallback; }
+}
+
+function flagLabel(flag) {
+    const labels = {
+        normal: ['Normal', 'success'],
+        suspicious: ['Suspicious', 'warning'],
+        cheating_detected: ['Cheating Detected', 'danger']
+    };
+    const item = labels[flag] || ['Not available', 'secondary'];
+    return `<span class="badge bg-${item[1]}">${item[0]}</span>`;
+}
+
 async function load() {
     try {
         const r = await THR.api('/hr/applications/' + id);
@@ -126,6 +142,35 @@ async function load() {
                 <dt class="col-sm-3">2nd round task</dt><dd class="col-sm-9">${a.task? `${THR.escapeHtml(a.task.title)} (${THR.statusPill(a.task.status)})` : '—'}</dd>
                 <dt class="col-sm-3">Interview</dt><dd class="col-sm-9">${a.interview? `${a.interview.date} ${a.interview.time} (${a.interview.mode})` : '—'}</dd>
             </dl>`;
+
+        const score = r.assessment_score_breakdown;
+        document.getElementById('assBody').innerHTML = score ? `
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Score</dt><dd class="col-sm-8">${score.score}%</dd>
+                <dt class="col-sm-4">Result</dt><dd class="col-sm-8">${THR.statusPill(score.status)}</dd>
+                <dt class="col-sm-4">Assessment ID</dt><dd class="col-sm-8">${score.assessment_id}</dd>
+            </dl>
+        ` : '<span class="text-muted">No assessment submission yet.</span>';
+
+        const anti = parseJson(r.anti_cheat_logs, {});
+        const logs = Array.isArray(anti.latest_logs) ? anti.latest_logs : [];
+        document.getElementById('antiBody').innerHTML = `
+            <dl class="row mb-2">
+                <dt class="col-sm-4">Submission flag</dt><dd class="col-sm-8">${flagLabel(anti.flag)}</dd>
+                <dt class="col-sm-4">Warnings</dt><dd class="col-sm-8">${anti.warnings ?? 0}</dd>
+                <dt class="col-sm-4">Violations</dt><dd class="col-sm-8">${anti.violations ?? 0}</dd>
+                <dt class="col-sm-4">Plagiarism</dt><dd class="col-sm-8">${THR.escapeHtml(r.plagiarism_report || 'Normal')}</dd>
+                <dt class="col-sm-4">Experience</dt><dd class="col-sm-8">${THR.escapeHtml(r.experience_verification_status || 'Not verified')}</dd>
+            </dl>
+            ${logs.length ? `
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Event</th><th>Time</th></tr></thead>
+                        <tbody>${logs.map(log => `<tr><td>${THR.escapeHtml(log.event_type)}</td><td>${THR.fmtDate(log.event_time)}</td></tr>`).join('')}</tbody>
+                    </table>
+                </div>
+            ` : '<span class="text-muted small">No anti-cheat events logged.</span>'}
+        `;
 
         updateActionButtons(a.status);
 

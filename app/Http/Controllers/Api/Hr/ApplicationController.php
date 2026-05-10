@@ -103,8 +103,24 @@ public function shortlist(Request $request, JobApplication $application)
         'rejection_reason' => null,
     ]);
 
-    // Notification & Logging (Same as before)
-    // ...
+    Notification::create([
+        'user_id' => $application->candidate_id,
+        'type' => 'system_alert',
+        'title' => 'Application shortlisted',
+        'message' => 'Your application was shortlisted for the next hiring step.',
+    ]);
+
+    ActivityLogger::log(
+        'shortlist',
+        'hr_applications',
+        "Application {$application->id} shortlisted by HR {$request->user()->email}.",
+        $request
+    );
+
+    return response()->json([
+        'message' => 'Candidate shortlisted successfully.',
+        'application' => $application->fresh(['candidate:id,name,email', 'job:id,title', 'task']),
+    ]);
 }
 
     public function reject(Request $request, JobApplication $application)

@@ -134,6 +134,8 @@ Route::prefix('company')->group(function () {
 Route::prefix('candidate')->group(function () {
     Route::post('/login', [CandidateAuthController::class, 'login']);
     Route::post('/register', [CandidateAuthController::class, 'register']);
+    Route::post('/verify-email', [CandidateAuthController::class, 'verifyEmail']);
+    Route::post('/resend-verification-code', [CandidateAuthController::class, 'resendVerificationCode']);
 
 // ---------- PUBLIC ----------
 Route::prefix('public')->group(function () {

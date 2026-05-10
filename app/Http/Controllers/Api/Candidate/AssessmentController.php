@@ -23,6 +23,7 @@ class AssessmentController extends Controller
             'application_id' => ['required', 'integer', 'exists:job_applications,id'],
             'device_fingerprint' => ['required', 'string', 'max:255'],
             'browser' => ['required', 'string', 'max:255'],
+            'tab_id' => ['nullable', 'string', 'max:100'],
         ]);
 
         $application = JobApplication::with('job.assessment.questions')->findOrFail($request->application_id);
@@ -61,6 +62,15 @@ class AssessmentController extends Controller
                 ], 422);
             }
 
+            $activeTabId = $existingSession->device_info['tab_id'] ?? null;
+            if ($request->filled('tab_id') && $activeTabId && $activeTabId !== $request->tab_id) {
+                $this->logViolation($existingSession, 'multiple_tab_open', ['tab_id' => $request->tab_id]);
+
+                return response()->json([
+                    'message' => 'Assessment is already open in another tab.',
+                ], 422);
+            }
+
             return response()->json([
                 'message' => 'Assessment session resumed successfully.',
                 'session' => $existingSession->load('assessment.questions'),
@@ -83,6 +93,7 @@ class AssessmentController extends Controller
             'device_info' => [
                 'fingerprint' => $request->device_fingerprint,
                 'browser' => $request->browser,
+                'tab_id' => $request->tab_id,
             ],
             'ip_address' => $request->ip(),
         ]);
@@ -107,6 +118,7 @@ class AssessmentController extends Controller
                 'copy_paste_attempt',
                 'right_click',
                 'multiple_device_login',
+                'multiple_tab_open',
                 'suspicious_pattern',
             ])],
             'metadata' => ['nullable', 'array'],
