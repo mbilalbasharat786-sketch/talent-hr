@@ -1,4 +1,4 @@
- @extends('layouts.app', ['role' => 'company'])
+@extends('layouts.app', ['role' => 'company'])
 
 @section('title', 'Verification Documents')
 

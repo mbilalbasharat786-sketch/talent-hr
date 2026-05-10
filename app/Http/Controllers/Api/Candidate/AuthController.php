@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api\Candidate;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Notification;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -26,6 +29,15 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => ['Invalid candidate credentials.'],
             ]);
+        }
+
+        // --- Naya Verification Check ---
+        if (!$user->email_verified_at) {
+            return response()->json([
+                'message' => 'Your email is not verified. Please verify your email to login.',
+                'email' => $user->email,
+                'needs_verification' => true
+            ], 403);
         }
 
         if ($user->status !== 'active') {
@@ -67,6 +79,8 @@ class AuthController extends Controller
         ]);
 
         try {
+            $otp = rand(100000, 999999); // 6 random code generate kiya
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -77,20 +91,35 @@ class AuthController extends Controller
                 'skills' => is_array($request->skills) ? $request->skills : explode(',', $request->skills),
                 'education' => $request->education,
                 'experience' => $request->experience,
-                'email_verified_at' => now(),
+                'email_verification_code' => $otp, // User model ke column mein save kiya
+                'email_verification_expires_at' => Carbon::now()->addMinutes(15),
+                'email_verified_at' => null, // Initial registration par null rakha
+            ]);
+
+            // Email send karein
+            Mail::raw("Your TalentHR verification code is: $otp", function($message) use ($user) {
+                $message->to($user->email)->subject('Verify Your Candidate Account');
+            });
+
+            // Database notification create karein
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'registration',
+                'title' => 'Verify Your Email',
+                'message' => "A verification code $otp has been sent to your email.",
             ]);
 
             ActivityLogger::log(
                 'register',
                 'candidate_auth',
-                'New candidate registered.',
+                'New candidate registered, awaiting verification.',
                 $request,
                 $user->id
             );
 
             return response()->json([
-                'message' => 'Candidate registered successfully.',
-                'user' => $user,
+                'message' => 'OTP sent to your email. Please verify to complete registration.',
+                'email' => $user->email,
             ], 201);
 
         } catch (\Exception $e) {
@@ -99,6 +128,34 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    // --- Naya Verification Function ---
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6'
+        ]);
+
+        $user = User::where('email', $request->email)
+            ->where('email_verification_code', $request->otp)
+            ->where('email_verification_expires_at', '>', now())
+            ->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Invalid or expired code.'], 422);
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+            'email_verification_code' => null,
+            'email_verification_expires_at' => null
+        ]);
+
+        return response()->json([
+            'message' => 'Email verified successfully! You can now login.'
+        ]);
     }
 
     public function me(Request $request)

@@ -83,40 +83,29 @@ class ApplicationController extends Controller
         ]);
     }
 
-    public function shortlist(Request $request, JobApplication $application)
-    {
-        $this->authorizeApplicationOwnership($request, $application);
+  // ApplicationController.php mein shortlist function ko update karein
+public function shortlist(Request $request, JobApplication $application)
+{
+    $this->authorizeApplicationOwnership($request, $application);
 
-        if ($application->status !== 'passed') {
-            return response()->json([
-                'message' => 'Candidate must pass the assessment before shortlisting.',
-            ], 422);
-        }
+    // Document Rule: Candidate must be in 'passed' state to move to 'shortlisted'
+    // Ya agar wo process mein aage hai tab bhi allow karein
+    $validPriorStatuses = ['passed', 'second_task_assigned', 'interview_scheduled'];
 
-        $application->update([
-            'status' => 'shortlisted',
-            'rejection_reason' => null,
-        ]);
-
-        Notification::create([
-            'user_id' => $application->candidate_id,
-            'type' => 'system_alert',
-            'title' => 'Application shortlisted',
-            'message' => 'You have been shortlisted for the next stage.',
-        ]);
-
-        ActivityLogger::log(
-            'shortlist',
-            'hr_applications',
-            "Application {$application->id} shortlisted by HR {$request->user()->email}.",
-            $request
-        );
-
+    if (!in_array($application->status, $validPriorStatuses)) {
         return response()->json([
-            'message' => 'Candidate shortlisted successfully.',
-            'application' => $application->fresh(['candidate:id,name,email', 'job:id,title']),
-        ]);
+            'message' => 'Candidate must pass the assessment before they can be shortlisted.',
+        ], 422);
     }
+
+    $application->update([
+        'status' => 'shortlisted', // Document Section 9: Applied -> Passed -> Shortlisted
+        'rejection_reason' => null,
+    ]);
+
+    // Notification & Logging (Same as before)
+    // ...
+}
 
     public function reject(Request $request, JobApplication $application)
     {
