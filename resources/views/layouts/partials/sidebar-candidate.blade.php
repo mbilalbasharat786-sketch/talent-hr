@@ -5,6 +5,7 @@
 <a class="nav-link" href="/candidate/jobs"><i class="bi bi-search"></i><span>Browse Jobs</span></a>
 <a class="nav-link" href="/candidate/apply"><i class="bi bi-send-plus"></i><span>Apply to Job</span></a>
 <a class="nav-link" href="/candidate/applications"><i class="bi bi-file-earmark-text"></i><span>My Applications</span></a>
+<a class="nav-link" href="/candidate/applications"><i class="bi bi-shield-check"></i><span>Assessments</span></a>
 <a class="nav-link" href="/candidate/internships"><i class="bi bi-file-earmark-medical"></i><span>Internships</span></a>
 <div class="nav-section">Account</div>
 <a class="nav-link" href="/candidate/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>

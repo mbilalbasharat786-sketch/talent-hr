@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Assessment;
+use App\Models\AssessmentSession;
 use App\Models\Company;
 use App\Models\HrJob;
 use App\Models\JobApplication;
@@ -144,6 +145,38 @@ class CandidateModuleTest extends TestCase
             'candidate_id' => $candidate->id,
             'status' => 'auto_submitted',
             'cheating_flag' => 'cheating_detected',
+        ]);
+    }
+
+    public function test_expired_session_auto_submits_when_candidate_reopens_assessment(): void
+    {
+        [$candidate, $job, $application, $assessment, $question] = $this->candidateAndJobFixture(withApplication: true, withQuestion: true);
+
+        Sanctum::actingAs($candidate);
+
+        $this->postJson('/api/candidate/assessment/start', [
+            'application_id' => $application->id,
+            'device_fingerprint' => 'device-1',
+            'browser' => 'Chrome',
+            'tab_id' => 'tab-1',
+        ])->assertCreated();
+
+        AssessmentSession::where('candidate_id', $candidate->id)
+            ->where('assessment_id', $assessment->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $this->postJson('/api/candidate/assessment/start', [
+            'application_id' => $application->id,
+            'device_fingerprint' => 'device-1',
+            'browser' => 'Chrome',
+            'tab_id' => 'tab-1',
+        ])->assertOk()
+            ->assertJsonPath('message', 'Assessment auto-submitted due to security or timeout rules.');
+
+        $this->assertDatabaseHas('assessment_submissions', [
+            'assessment_id' => $assessment->id,
+            'candidate_id' => $candidate->id,
+            'status' => 'auto_submitted',
         ]);
     }
 

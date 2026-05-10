@@ -49,6 +49,10 @@ class AssessmentController extends Controller
             ->latest()
             ->first();
 
+        if ($existingSession && $existingSession->expires_at->isPast()) {
+            return $this->autoSubmitExpiredSession($existingSession, $candidate);
+        }
+
         if ($existingSession && $existingSession->expires_at->isFuture()) {
             $sameDevice = ($existingSession->device_info['fingerprint'] ?? null) === $request->device_fingerprint
                 && ($existingSession->device_info['browser'] ?? null) === $request->browser

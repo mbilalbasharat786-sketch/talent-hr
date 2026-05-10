@@ -91,6 +91,16 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     } catch (e) { THR.toast(e.message, 'danger'); }
 });
 
+function collectAnswers() {
+    const answers = {};
+    document.querySelectorAll('[data-qid]').forEach(card => {
+        const qid = card.dataset.qid;
+        const inp = card.querySelector('input[type=radio]:checked, input[type=text], textarea');
+        answers[qid] = inp ? inp.value : null;
+    });
+    return answers;
+}
+
 function renderQuestions() {
     document.getElementById('assTitle').textContent = assessment.title || 'Assessment';
     document.getElementById('assMeta').textContent = `${questions.length} questions · ${assessment.time_limit || 30} min`;
@@ -110,13 +120,7 @@ function renderQuestions() {
         </div>`).join('');
     document.getElementById('container').innerHTML = html + `<button class="btn btn-success" id="submitBtn"><i class="bi bi-send"></i> Submit assessment</button>`;
     document.getElementById('submitBtn').addEventListener('click', () => {
-        const answers = {};
-        document.querySelectorAll('[data-qid]').forEach(card => {
-            const qid = card.dataset.qid;
-            const inp = card.querySelector('input[type=radio]:checked, input[type=text], textarea');
-            answers[qid] = inp ? inp.value : null;
-        });
-        submit(answers);
+        submit(collectAnswers());
     });
 }
 
@@ -133,7 +137,7 @@ function startTimer() {
         const left = Math.max(0, expires - Date.now());
         const m = Math.floor(left / 60000); const s = Math.floor((left % 60000) / 1000);
         document.getElementById('timer').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-        if (left <= 0) { clearInterval(timerInterval); submit({}); }
+        if (left <= 0) { clearInterval(timerInterval); submit(collectAnswers()); }
     }, 1000);
 }
 

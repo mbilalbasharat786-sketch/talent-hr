@@ -120,7 +120,7 @@ function parseJson(value, fallback = null) {
 function flagLabel(flag) {
     const labels = {
         normal: ['Normal', 'success'],
-        suspicious: ['Suspicious', 'warning'],
+        suspicious: ['Cheating Suspected', 'warning'],
         cheating_detected: ['Cheating Detected', 'danger']
     };
     const item = labels[flag] || ['Not available', 'secondary'];
