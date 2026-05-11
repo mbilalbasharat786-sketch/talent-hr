@@ -18,7 +18,8 @@ class UserManagementController extends Controller
         ]);
 
         $users = User::query()
-            ->select('id', 'name', 'email', 'role', 'status', 'created_at', 'updated_at')
+            ->with('company:id,name')
+            ->select('id', 'name', 'email', 'role', 'status', 'company_id', 'phone', 'email_verified_at', 'created_at', 'updated_at')
             ->when($request->role, function ($query) use ($request) {
                 $query->where('role', $request->role);
             })
@@ -33,16 +34,10 @@ class UserManagementController extends Controller
 
     public function show(User $user)
     {
+        $user->load('company:id,name,email,status,trust_level');
+
         return response()->json([
-            'user' => $user->only([
-                'id',
-                'name',
-                'email',
-                'role',
-                'status',
-                'created_at',
-                'updated_at',
-            ]),
+            'user' => $user,
         ]);
     }
 
@@ -92,4 +87,3 @@ class UserManagementController extends Controller
         ]);
     }
 }
-

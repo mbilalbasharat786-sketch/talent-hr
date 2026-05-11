@@ -5,8 +5,9 @@
 <div class="row g-3">
     <div class="col-lg-8"><div class="card"><div class="card-body" id="jobDetails">Loading…</div></div></div>
     <div class="col-lg-4"><div class="card"><div class="card-header">Actions</div><div class="card-body d-grid gap-2">
-        <button class="btn btn-success" id="approveBtn">Approve Job</button>
-        <button class="btn btn-danger" id="rejectBtn">Reject Job</button>
+        <button class="btn btn-success d-none" id="approveBtn">Approve Job</button>
+        <button class="btn btn-danger d-none" id="rejectBtn">Reject Job</button>
+        <p class="text-muted small mb-0 d-none" id="noActionMsg">No actions available for this job status.</p>
     </div></div></div>
 </div>
 @push('scripts')
@@ -30,12 +31,14 @@ async function load() {
             </dl>`;
         
         // Update action buttons based on status
-        if (job.status === 'pending') {
-            document.getElementById('approveBtn').style.display = 'block';
-            document.getElementById('rejectBtn').style.display = 'block';
+        if (job.status === 'pending_approval') {
+            document.getElementById('approveBtn').classList.remove('d-none');
+            document.getElementById('rejectBtn').classList.remove('d-none');
+            document.getElementById('noActionMsg').classList.add('d-none');
         } else {
-            document.getElementById('approveBtn').style.display = 'none';
-            document.getElementById('rejectBtn').style.display = 'none';
+            document.getElementById('approveBtn').classList.add('d-none');
+            document.getElementById('rejectBtn').classList.add('d-none');
+            document.getElementById('noActionMsg').classList.remove('d-none');
         }
     } catch (e) { THR.toast(e.message, 'danger'); }
 }
@@ -51,9 +54,10 @@ document.getElementById('approveBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('rejectBtn').addEventListener('click', async () => {
-    if (!confirm('Reject this job? It will not be visible to candidates.')) return;
+    const reason = prompt('Reject this job? Please enter a rejection reason.');
+    if (!reason) return;
     try {
-        await THR.api(`/admin/jobs/${id}/reject`, { method: 'POST' });
+        await THR.api(`/admin/jobs/${id}/reject`, { method: 'POST', body: { reason } });
         THR.toast('Job rejected successfully', 'success');
         load();
     } catch (e) { THR.toast(e.message, 'danger'); }

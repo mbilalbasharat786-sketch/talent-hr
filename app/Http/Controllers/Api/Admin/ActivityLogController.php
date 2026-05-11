@@ -14,6 +14,13 @@ class ActivityLogController extends Controller
             ->when($request->user_id, function ($query) use ($request) {
                 $query->where('user_id', $request->user_id);
             })
+            ->when($request->user, function ($query) use ($request) {
+                $term = $request->user;
+                $query->whereHas('user', function ($userQuery) use ($term) {
+                    $userQuery->where('email', 'like', "%{$term}%")
+                        ->orWhere('name', 'like', "%{$term}%");
+                });
+            })
             ->when($request->module, function ($query) use ($request) {
                 $query->where('module', $request->module);
             })
@@ -26,4 +33,3 @@ class ActivityLogController extends Controller
         return response()->json($logs);
     }
 }
-

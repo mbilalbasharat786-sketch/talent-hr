@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\VerificationDocument;
 
 use App\Services\ActivityLogger;
+use App\Services\FakeDocumentDetectionService;
 
 use Illuminate\Http\Request;
 
@@ -24,7 +25,7 @@ class DocumentController extends Controller
 
 {
 
-    public function store(Request $request)
+    public function store(Request $request, FakeDocumentDetectionService $fakeDocumentDetector)
 
     {
 
@@ -101,6 +102,8 @@ class DocumentController extends Controller
 
 
         foreach ($files as $type => $file) {
+
+            $fakeDocumentDetector->detectFakeDocument($file, $company->id, "company_{$type}_document");
 
             $path = $file->store("verification-documents/company-{$company->id}");
 

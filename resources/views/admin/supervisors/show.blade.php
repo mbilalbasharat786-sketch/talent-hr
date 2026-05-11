@@ -7,6 +7,7 @@
     <div class="col-lg-4"><div class="card"><div class="card-header">Actions</div><div class="card-body d-grid gap-2">
         <button class="btn btn-success" id="approveBtn">Approve</button>
         <button class="btn btn-danger" id="rejectBtn">Reject</button>
+        <p class="text-muted small mb-0 d-none" id="noActionMsg">Decision already recorded.</p>
     </div></div></div>
 </div>
 @push('scripts')
@@ -26,6 +27,10 @@ async function load() {
                 <dt class="col-sm-3">Selfie</dt><dd class="col-sm-9">${s.selfie_secure_url ? `<button type="button" class="btn btn-sm btn-outline-primary" onclick="THR.openFile('${THR.escapeHtml(s.selfie_secure_url)}')"><i class="bi bi-eye"></i> View selfie</button>` : '—'}</dd>
                 <dt class="col-sm-3">Rejection</dt><dd class="col-sm-9">${THR.escapeHtml(s.rejection_reason||'—')}</dd>
             </dl>`;
+        const pending = s.status === 'pending';
+        document.getElementById('approveBtn').classList.toggle('d-none', !pending);
+        document.getElementById('rejectBtn').classList.toggle('d-none', !pending);
+        document.getElementById('noActionMsg').classList.toggle('d-none', pending);
     } catch (e) { THR.toast(e.message, 'danger'); }
 }
 load();

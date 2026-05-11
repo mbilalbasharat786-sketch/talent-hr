@@ -8,6 +8,7 @@
         <button class="btn btn-success" id="verifyBtn">Verify (full)</button>
         <button class="btn btn-warning" id="partialBtn">Mark Partial</button>
         <button class="btn btn-danger" id="rejectBtn">Reject</button>
+        <p class="text-muted small mb-0 d-none" id="noActionMsg">Decision already recorded.</p>
     </div></div></div>
 </div>
 @push('scripts')
@@ -28,6 +29,11 @@ async function load() {
                 <dt class="col-sm-3">Verification email</dt><dd class="col-sm-9"><pre class="mb-0 small">${THR.escapeHtml(i.verification_email_response||'—')}</pre></dd>
                 <dt class="col-sm-3">Rejection</dt><dd class="col-sm-9">${THR.escapeHtml(i.rejection_reason||'—')}</dd>
             </dl>`;
+        const pending = i.status === 'pending';
+        document.getElementById('verifyBtn').classList.toggle('d-none', !pending);
+        document.getElementById('partialBtn').classList.toggle('d-none', !pending);
+        document.getElementById('rejectBtn').classList.toggle('d-none', !pending);
+        document.getElementById('noActionMsg').classList.toggle('d-none', pending);
     } catch (e) { THR.toast(e.message, 'danger'); }
 }
 load();

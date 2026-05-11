@@ -30,7 +30,7 @@
                 <td>
                     <div class="btn-group">
                         <a class="btn btn-sm btn-outline-primary" href="/admin/jobs/${job.id}">View</a>
-                        ${job.status === 'pending' ? `
+                        ${job.status === 'pending_approval' ? `
                             <button class="btn btn-sm btn-success" onclick="approveJob(${job.id})">Approve</button>
                             <button class="btn btn-sm btn-danger" onclick="rejectJob(${job.id})">Reject</button>
                         ` : ''}
@@ -51,9 +51,10 @@ async function approveJob(jobId) {
 }
 
 async function rejectJob(jobId) {
-    if (!confirm('Reject this job? It will not be visible to candidates.')) return;
+    const reason = prompt('Reject this job? Please enter a rejection reason.');
+    if (!reason) return;
     try {
-        await THR.api(`/admin/jobs/${jobId}/reject`, { method: 'POST' });
+        await THR.api(`/admin/jobs/${jobId}/reject`, { method: 'POST', body: { reason } });
         THR.toast('Job rejected successfully', 'success');
         location.reload();
     } catch (e) { THR.toast(e.message, 'danger'); }

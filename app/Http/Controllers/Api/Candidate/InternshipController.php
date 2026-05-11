@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Internship;
 use App\Models\Notification;
 use App\Services\ActivityLogger;
+use App\Services\DuplicateCertificateDetectionService;
+use App\Services\FakeDocumentDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,7 +22,11 @@ class InternshipController extends Controller
         return response()->json($internships);
     }
 
-    public function store(Request $request)
+    public function store(
+        Request $request,
+        DuplicateCertificateDetectionService $duplicateDetector,
+        FakeDocumentDetectionService $fakeDocumentDetector
+    )
     {
         $candidate = $request->user();
 
@@ -31,7 +37,33 @@ class InternshipController extends Controller
             'certificate' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
-        $path = $request->file('certificate')->store('internship-certificates');
+        $certificate = $request->file('certificate');
+        $path = $certificate->store('internship-certificates');
+        $certificateHash = hash_file('sha256', $certificate->getPathname());
+        $certificateText = trim($request->company_name.' '.$request->duration.' '.$request->supervisor_email);
+
+        $duplicateDetector->detectDuplicateCertificate($certificate, $candidate->id, [
+            'company_name' => $request->company_name,
+            'duration' => $request->duration,
+            'supervisor_email' => $request->supervisor_email,
+        ]);
+
+        $metadataMatches = $duplicateDetector->checkMetadataSimilarity([
+            'company_name' => $request->company_name,
+            'duration' => $request->duration,
+            'supervisor_email' => $request->supervisor_email,
+        ], $candidate->id);
+
+        if ($metadataMatches !== []) {
+            \App\Models\FraudLog::create([
+                'type' => 'duplicate_internship_certificate',
+                'reference_id' => $candidate->id,
+                'description' => 'Duplicate internship metadata detected. Matches: '.json_encode($metadataMatches),
+                'status' => 'open',
+            ]);
+        }
+
+        $fakeDocumentDetector->detectFakeDocument($certificate, $candidate->id, 'internship_certificate');
 
         $internship = Internship::create([
             'candidate_id' => $candidate->id,
@@ -39,6 +71,8 @@ class InternshipController extends Controller
             'duration' => $request->duration,
             'supervisor_email' => $request->supervisor_email,
             'certificate_path' => $path,
+            'certificate_hash' => $certificateHash,
+            'certificate_text' => $certificateText,
             'status' => 'pending',
         ]);
 

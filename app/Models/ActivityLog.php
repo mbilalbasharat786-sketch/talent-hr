@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActivityLog extends Model
 {
+    protected static function booted(): void
+    {
+        static::updating(fn () => false);
+        static::deleting(fn () => false);
+    }
+
     protected $fillable = [
         'user_id',
         'action',
@@ -20,4 +26,3 @@ class ActivityLog extends Model
         return $this->belongsTo(User::class);
     }
 }
-

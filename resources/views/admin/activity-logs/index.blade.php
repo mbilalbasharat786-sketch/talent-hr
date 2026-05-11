@@ -19,10 +19,17 @@
                 <label class="form-label small fw-bold">Module</label>
                 <select id="filterModule" class="form-select form-select-sm">
                     <option value="">All Modules</option>
-                    <option value="authentication">Authentication</option>
+                    <option value="admin_auth">Admin Auth</option>
+                    <option value="candidate_auth">Candidate Auth</option>
+                    <option value="company_auth">Company Auth</option>
+                    <option value="hr_auth">HR Auth</option>
                     <option value="hr_jobs">HR Jobs</option>
                     <option value="hr_assessments">Assessments</option>
                     <option value="company_verification">Company Verification</option>
+                    <option value="supervisor_verification">Supervisor Verification</option>
+                    <option value="internship_verification">Internship Verification</option>
+                    <option value="fraud_detection">Fraud Detection</option>
+                    <option value="user_management">User Management</option>
                 </select>
             </div>
             <div class="col-md-3">

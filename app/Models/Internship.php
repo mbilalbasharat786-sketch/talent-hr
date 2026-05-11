@@ -12,6 +12,8 @@ class Internship extends Model
         'duration',
         'supervisor_email',
         'certificate_path',
+        'certificate_hash',
+        'certificate_text',
         'verification_email_response',
         'status',
         'rejection_reason',
@@ -30,4 +32,3 @@ public function getCertificateSecureUrlAttribute()
         return $this->belongsTo(User::class, 'candidate_id');
     }
 }
-

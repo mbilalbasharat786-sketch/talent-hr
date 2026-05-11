@@ -45,6 +45,12 @@ class JobController extends Controller
     {
         $hr = $request->user();
 
+        if (! $hr->company || $hr->company->status !== 'approved') {
+            return response()->json([
+                'message' => 'Only verified companies can post jobs.',
+            ], 403);
+        }
+
         $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::in(['full_time', 'part_time', 'contract', 'internship'])],
@@ -104,6 +110,12 @@ class JobController extends Controller
     {
         $hr = $request->user();
         $this->authorizeJobOwnership($request, $job);
+
+        if (! $hr->company || $hr->company->status !== 'approved') {
+            return response()->json([
+                'message' => 'Only verified companies can update and submit jobs.',
+            ], 403);
+        }
 
         $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],

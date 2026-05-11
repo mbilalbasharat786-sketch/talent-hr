@@ -70,7 +70,7 @@
     function statusPill(status) {
         const map = {
             active: 'success', live: 'success', approved: 'success', verified: 'success', passed: 'success', resolved: 'success', read: 'secondary',
-            pending: 'warning', assessment_pending: 'warning', shortlisted: 'info', second_task_assigned: 'info', interview_scheduled: 'info', submitted: 'info', partial: 'warning', flagged: 'warning',
+            pending: 'warning', pending_approval: 'warning', assessment_pending: 'warning', shortlisted: 'info', second_task_assigned: 'info', interview_scheduled: 'info', submitted: 'info', partial: 'warning', flagged: 'warning',
             rejected: 'danger', failed: 'danger', inactive: 'secondary', deactivated: 'secondary', fraud: 'danger', closed: 'secondary',
         };
         const v = map[status] || 'secondary';
