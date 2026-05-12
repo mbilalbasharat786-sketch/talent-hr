@@ -4,22 +4,22 @@
     const ROLE_KEY = 'thr_role';
     const USER_KEY = 'thr_user';
 
-    const Auth = {
-        get token() { return localStorage.getItem(TOKEN_KEY); },
-        get role() { return localStorage.getItem(ROLE_KEY); },
-        get user() {
-            try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch (e) { return null; }
-        },
-        set(token, role, user) {
-            if (token) localStorage.setItem(TOKEN_KEY, token);
-            if (role) localStorage.setItem(ROLE_KEY, role);
-            if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
-        },
-        clear() {
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(ROLE_KEY);
-            localStorage.removeItem(USER_KEY);
-        },
+const Auth = {
+    get token() { return sessionStorage.getItem(TOKEN_KEY); },      // ✅
+    get role()  { return sessionStorage.getItem(ROLE_KEY); },       // ✅
+    get user() {
+        try { return JSON.parse(sessionStorage.getItem(USER_KEY) || 'null'); } catch (e) { return null; }
+    },                                                               // ✅
+    set(token, role, user) {
+        if (token) sessionStorage.setItem(TOKEN_KEY, token);        // ✅
+        if (role)  sessionStorage.setItem(ROLE_KEY, role);          // ✅
+        if (user)  sessionStorage.setItem(USER_KEY, JSON.stringify(user)); // ✅
+    },
+    clear() {
+        sessionStorage.removeItem(TOKEN_KEY);  // ✅
+        sessionStorage.removeItem(ROLE_KEY);   // ✅
+        sessionStorage.removeItem(USER_KEY);   // ✅
+    },
         loginRedirect(role) {
             const map = { admin: '/admin/login', company: '/company/login', hr: '/hr/login', candidate: '/candidate/login' };
             window.location.href = map[role] || '/';
