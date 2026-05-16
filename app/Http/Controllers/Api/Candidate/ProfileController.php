@@ -28,13 +28,21 @@ class ProfileController extends Controller
             'skills.*' => ['required', 'string', 'max:100'],
             'education' => ['nullable', 'string'],
             'experience' => ['nullable', 'string'],
+            'portfolio_links' => ['nullable', 'array'],
+            'portfolio_links.*' => ['required', 'url', 'max:500'],
         ]);
 
-        $candidate->update($request->only([
+        $data = $request->only([
             'skills',
             'education',
             'experience',
-        ]));
+        ]);
+
+        if ($request->has('portfolio_links')) {
+            $data['portfolio_links'] = $request->portfolio_links;
+        }
+
+        $candidate->update($data);
 
         $scoreBreakdown = $scoreService->calculate($candidate->fresh(['internships', 'assessmentSubmissions']));
 

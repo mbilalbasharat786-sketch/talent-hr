@@ -8,25 +8,39 @@
 
 <div class="row g-3">
 
-    <div class="col-lg-5"><div class="card"><div class="card-header">Upload document</div><div class="card-body">
+    <div class="col-lg-5"><div class="card"><div class="card-header">Upload documents</div><div class="card-body">
 
         <form id="docForm" enctype="multipart/form-data">
 
-            <div class="mb-3"><label class="form-label">Type</label>
+            <div class="mb-3">
 
-                <select class="form-select" name="type" required>
+                <label class="form-label">SECP Registration Certificate</label>
 
-                    <option value="">-- Select --</option>
+                <input type="file" name="secp" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
 
-                    <option value="secp">SECP Registration Certificate</option>
+                <div class="form-text">PDF/PNG/JPG/WEBP, max 5MB</div>
 
-                    <option value="ntn">NTN / Tax Certificate</option>
+            </div>
 
-                    <option value="address">Address Proof / Utility Bill</option>
+            <div class="mb-3">
 
-                </select></div>
+                <label class="form-label">NTN / Tax Certificate</label>
 
-            <div class="mb-3"><label class="form-label">File (PDF/PNG/JPG/WEBP)</label><input type="file" name="file" class="form-control" required accept=".pdf,.png,.jpg,.jpeg,.webp"></div>
+                <input type="file" name="ntn" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
+
+                <div class="form-text">PDF/PNG/JPG/WEBP, max 5MB</div>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label">Address Proof / Utility Bill</label>
+
+                <input type="file" name="address" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.webp">
+
+                <div class="form-text">PDF/PNG/JPG/WEBP, max 5MB</div>
+
+            </div>
 
             <button class="btn btn-primary">Upload</button>
 
@@ -46,6 +60,16 @@
 
 <script>
 
+const docTypeLabels = {
+
+    secp: 'SECP Registration Certificate',
+
+    ntn: 'NTN / Tax Certificate',
+
+    address: 'Address Proof / Utility Bill'
+
+};
+
 async function loadDocs() {
 
     try {
@@ -56,7 +80,7 @@ async function loadDocs() {
 
         const tb = document.getElementById('docList');
 
-        tb.innerHTML = docs.length ? docs.map(d => `<tr><td>${THR.escapeHtml(d.type)}</td><td>${THR.statusPill(d.status)}</td><td>${THR.fmtDate(d.created_at)}</td><td>${d.secure_url ? `<button type="button" class="btn btn-sm btn-outline-primary" onclick="THR.openFile('${THR.escapeHtml(d.secure_url)}')"><i class="bi bi-eye"></i> View</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
+        tb.innerHTML = docs.length ? docs.map(d => `<tr><td>${THR.escapeHtml(docTypeLabels[d.type] || d.type)}</td><td>${THR.statusPill(d.status)}</td><td>${THR.fmtDate(d.created_at)}</td><td>${d.secure_url ? `<button type="button" class="btn btn-sm btn-outline-primary" onclick="THR.openFile('${THR.escapeHtml(d.secure_url)}')"><i class="bi bi-eye"></i> View</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">No documents yet</td></tr>';
 
     } catch (e) { THR.toast(e.message, 'danger'); }
 
@@ -69,6 +93,22 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const fd = new FormData(e.target);
+
+    const hasFile = ['secp', 'ntn', 'address'].some((type) => {
+
+        const file = e.target.elements[type]?.files?.[0];
+
+        return Boolean(file);
+
+    });
+
+    if (! hasFile) {
+
+        THR.toast('Please choose at least one document.', 'warning');
+
+        return;
+
+    }
 
     try { await THR.api('/company/documents', { method: 'POST', body: fd }); THR.toast('Uploaded','success'); e.target.reset(); loadDocs(); }
 
