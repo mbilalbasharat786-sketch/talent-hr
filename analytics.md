@@ -1,6 +1,6 @@
 # TalentHR Project Analytics
 
-Yeh file `D:\talent hr` Laravel project ka roman English analysis hai. Is document ka maqsad yeh hai ke agar kisi ko project ka complete overview dena ho to woh yahan se samajh sake ke system kis cheez ke liye bana hai, roles kya hain, modules kaise kaam karte hain, database mein kya store hota hai, aur backend/frontend flow kaisa hai.
+ Is document ka maqsad yeh hai ke agar kisi ko project ka complete overview dena ho to woh yahan se samajh sake ke system kis cheez ke liye bana hai, roles kya hain, modules kaise kaam karte hain, database mein kya store hota hai, aur backend/frontend flow kaisa hai.
 
 ## 1. Project Ka Short Overview
 
